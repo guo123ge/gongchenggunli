@@ -11,7 +11,7 @@ import {
   stockIns,
   stockOuts,
 } from "./mock-data";
-import type { DailyLog, DashboardSummary, Hazard, Machinery, Material, ReviewItem, StockRecord } from "@/types";
+import type { ArchiveFile, DailyLog, DashboardSummary, Hazard, Machinery, Material, ReviewItem, StockRecord } from "@/types";
 
 type StoreData = {
   project: typeof project;
@@ -22,6 +22,7 @@ type StoreData = {
   hazards: Hazard[];
   machinery: Machinery[];
   reviewItems: ReviewItem[];
+  archiveFiles: ArchiveFile[];
 };
 
 const dataDir = path.join(process.cwd(), ".local-data");
@@ -36,6 +37,19 @@ const initialData: StoreData = {
   hazards,
   machinery,
   reviewItems,
+  archiveFiles: [
+    {
+      id: "file-001",
+      archiveId: "ar-002",
+      fileName: "复试报告.pdf",
+      filePath: "/logo.svg",
+      fileType: "application/pdf",
+      fileSize: 0,
+      version: "v1.0",
+      url: "/logo.svg",
+      uploadedAt: "2026-05-31 18:00",
+    },
+  ],
 };
 
 async function ensureStore() {
@@ -50,7 +64,9 @@ async function ensureStore() {
 export async function readStore(): Promise<StoreData> {
   await ensureStore();
   const raw = await readFile(dataFile, "utf8");
-  return JSON.parse(raw) as StoreData;
+  const data = JSON.parse(raw) as StoreData;
+  data.archiveFiles ??= initialData.archiveFiles;
+  return data;
 }
 
 export async function writeStore(data: StoreData) {
@@ -84,4 +100,3 @@ export function closeReviewItem(data: StoreData, targetType: ReviewItem["targetT
   const review = data.reviewItems.find((item) => item.targetType === targetType && item.id === targetId);
   if (review) review.status = status;
 }
-

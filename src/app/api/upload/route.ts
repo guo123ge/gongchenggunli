@@ -10,7 +10,8 @@ export async function POST(request: Request) {
   const bytes = Buffer.from(await file.arrayBuffer());
   const uploadDir = path.join(process.cwd(), "uploads");
   await mkdir(uploadDir, { recursive: true });
-  const fileName = `${Date.now()}-${file.name}`;
+  const safeOriginalName = file.name.replace(/[^\w.\-\u4e00-\u9fa5]/g, "_");
+  const fileName = `${Date.now()}-${safeOriginalName}`;
   const filePath = path.join(uploadDir, fileName);
   await writeFile(filePath, bytes);
 
@@ -25,4 +26,3 @@ export async function POST(request: Request) {
     },
   });
 }
-

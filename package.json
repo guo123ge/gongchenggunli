@@ -10,7 +10,8 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
-    "verify:phase1": "node scripts/verify-phase1-workflow.mjs"
+    "verify:phase1": "node scripts/verify-phase1-workflow.mjs",
+    "verify:archive": "node scripts/verify-file-archive-workflow.mjs"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",

@@ -30,6 +30,18 @@ export type Attachment = {
   hasWatermark?: boolean;
 };
 
+export type ArchiveFile = {
+  id: string;
+  archiveId: string;
+  fileName: string;
+  filePath: string;
+  fileType: string;
+  fileSize: number;
+  version: string;
+  url: string;
+  uploadedAt: string;
+};
+
 export type DailyLog = {
   id: string;
   projectId: string;
@@ -116,4 +128,3 @@ export type DashboardSummary = {
   lowStockMaterials: number;
   maintenanceDue: number;
 };
-
