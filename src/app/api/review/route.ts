@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
 import { closeReviewItem, readStore, updateStore } from "@/lib/server-store";
 import { reviewSchema } from "@/lib/validators";
 
@@ -8,6 +9,11 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const session = await auth();
+  if (session?.user?.role !== "PM") {
+    return NextResponse.json({ ok: false, error: "仅项目经理可以审核" }, { status: 403 });
+  }
+
   const body = await request.json().catch(() => ({}));
   const parsed = reviewSchema.safeParse(body);
   if (!parsed.success) {
@@ -72,4 +78,3 @@ export async function POST(request: Request) {
     },
   });
 }
-

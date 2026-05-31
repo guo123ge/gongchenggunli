@@ -2,8 +2,13 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { users } from "./mock-data";
+import type { ProjectRole } from "@/types/enums";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  trustHost: true,
+  pages: {
+    signIn: "/login",
+  },
   session: { strategy: "jwt" },
   providers: [
     Credentials({
@@ -27,16 +32,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
+    authorized({ auth }) {
+      return Boolean(auth?.user);
+    },
     jwt({ token, user }) {
       if (user) {
-        token.role = (user as { role?: string }).role;
+        token.role = user.role;
       }
       return token;
     },
     session({ session, token }) {
       if (session.user) {
         session.user.id = token.sub ?? "";
-        (session.user as typeof session.user & { role: string }).role = String(token.role ?? "CON");
+        session.user.role = (token.role ?? "CON") as ProjectRole;
       }
       return session;
     },

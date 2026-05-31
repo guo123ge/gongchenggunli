@@ -1,8 +1,9 @@
 const baseUrl = process.env.BASE_URL ?? "http://127.0.0.1:3000";
+let cookie = "";
 
 async function request(path, init) {
   const response = await fetch(`${baseUrl}${path}`, {
-    headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) },
+    headers: { "Content-Type": "application/json", ...(cookie ? { Cookie: cookie } : {}), ...(init?.headers ?? {}) },
     ...init,
   });
   const body = await response.json();
@@ -11,6 +12,33 @@ async function request(path, init) {
   }
   return body.data;
 }
+
+async function loginAsPm() {
+  const csrfResponse = await fetch(`${baseUrl}/api/auth/csrf`);
+  cookie = csrfResponse.headers.getSetCookie().map((item) => item.split(";")[0]).join("; ");
+  const csrf = await csrfResponse.json();
+  const loginResponse = await fetch(`${baseUrl}/api/auth/callback/credentials`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      Cookie: cookie,
+    },
+    body: new URLSearchParams({
+      csrfToken: csrf.csrfToken,
+      username: "pm",
+      password: "123456",
+      json: "true",
+    }),
+    redirect: "manual",
+  });
+  const nextCookies = loginResponse.headers.getSetCookie().map((item) => item.split(";")[0]);
+  cookie = [cookie, ...nextCookies].filter(Boolean).join("; ");
+  if (!cookie.includes("authjs.session-token") && !cookie.includes("__Secure-authjs.session-token")) {
+    throw new Error("登录未获得 session cookie");
+  }
+}
+
+await loginAsPm();
 
 const createdLog = await request("/api/daily-logs", {
   method: "POST",
@@ -84,4 +112,3 @@ console.log(
     2,
   ),
 );
-
