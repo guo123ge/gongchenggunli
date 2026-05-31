@@ -1,0 +1,40 @@
+import { z } from "zod";
+
+export const dailyLogSchema = z.object({
+  projectId: z.string().min(1),
+  workDate: z.coerce.date(),
+  weather: z.enum(["晴", "阴", "雨", "雪", "大风"]),
+  tempLow: z.coerce.number().min(-50).max(60),
+  tempHigh: z.coerce.number().min(-50).max(60),
+  workContent: z.string().min(5, "施工内容至少 5 个字"),
+  workPosition: z.string().min(1, "请填写施工部位"),
+  workProcess: z.string().min(1, "请填写施工工序"),
+  laborCount: z.coerce.number().min(0),
+  laborDetail: z
+    .array(z.object({ type: z.string().min(1), count: z.coerce.number().min(0) }))
+    .default([]),
+  machineryUsed: z.array(z.string()).default([]),
+  materialUsed: z
+    .array(z.object({ name: z.string(), quantity: z.coerce.number().min(0), unit: z.string() }))
+    .default([]),
+  qualityCheck: z.string().optional(),
+  safetyCheck: z.string().optional(),
+  status: z.enum(["draft", "submitted"]).default("draft"),
+});
+
+export const materialSchema = z.object({
+  projectId: z.string().min(1),
+  name: z.string().min(1),
+  category: z.string().min(1),
+  spec: z.string().min(1),
+  unit: z.string().min(1),
+  safetyStock: z.coerce.number().min(0).default(0),
+});
+
+export const reviewSchema = z.object({
+  targetType: z.enum(["daily-log", "material", "machinery", "safety", "archive", "change-visa"]),
+  targetId: z.string().min(1),
+  action: z.enum(["approve", "reject", "return"]),
+  comment: z.string().optional(),
+});
+

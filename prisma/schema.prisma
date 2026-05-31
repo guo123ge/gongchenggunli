@@ -1,0 +1,405 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  username     String   @unique
+  displayName  String
+  phone        String
+  avatar       String?
+  passwordHash String
+  globalRole   String   @default("user")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  projectMembers ProjectMember[]
+  accounts       Account[]
+  sessions       Session[]
+
+  dailyLogs          DailyLog[]
+  stockIns           StockIn[]
+  stockOuts          StockOut[]
+  hazards            SafetyHazard[]
+  incidents          SafetyIncident[]
+  archives           Archive[]
+  changes            DesignChange[]
+  visas              EngineeringVisa[]
+  machinery          Machinery[]
+  maintenanceRecords MaintenanceRecord[]
+  shiftRecords       ShiftRecord[]
+
+  reviewedDailyLogs DailyLog[] @relation("DailyLogReviewer")
+  reviewedStockIns  StockIn[]  @relation("StockInReviewer")
+  reviewedStockOuts StockOut[] @relation("StockOutReviewer")
+  reviewedHazards   SafetyHazard[] @relation("HazardReviewer")
+  reviewedIncidents SafetyIncident[] @relation("IncidentReviewer")
+  reviewedArchives  Archive[] @relation("ArchiveReviewer")
+  reviewedChanges   DesignChange[] @relation("ChangeReviewer")
+  reviewedVisas     EngineeringVisa[] @relation("VisaReviewer")
+  reviewedMachinery Machinery[] @relation("MachineryReviewer")
+}
+
+model Account {
+  id                String  @id @default(uuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Project {
+  id               String   @id @default(uuid())
+  name             String
+  code             String   @unique
+  location         String
+  startDate        DateTime
+  plannedEndDate   DateTime
+  owner            String
+  contractor       String
+  supervisor       String?
+  status           String   @default("preparation")
+  createdAt        DateTime @default(now())
+
+  members          ProjectMember[]
+  dailyLogs        DailyLog[]
+  materials        Material[]
+  machinery        Machinery[]
+  safetyHazards    SafetyHazard[]
+  safetyIncidents  SafetyIncident[]
+  archives         Archive[]
+  designChanges    DesignChange[]
+  engineeringVisas EngineeringVisa[]
+}
+
+model ProjectMember {
+  id        String   @id @default(uuid())
+  projectId String
+  userId    String
+  role      String
+  joinedAt  DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+}
+
+model DailyLog {
+  id            String   @id @default(uuid())
+  projectId     String
+  workDate      DateTime
+  weather       String
+  tempLow       Int
+  tempHigh      Int
+  workContent   String
+  workPosition  String
+  workProcess   String
+  laborCount    Int
+  laborDetail   String
+  machineryUsed String
+  materialUsed  String
+  qualityCheck  String?
+  safetyCheck   String?
+
+  status        String   @default("draft")
+  submittedById String
+  reviewedById  String?
+  reviewedAt    DateTime?
+  reviewComment String?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  project     Project @relation(fields: [projectId], references: [id])
+  submittedBy User    @relation(fields: [submittedById], references: [id])
+  reviewedBy  User?   @relation("DailyLogReviewer", fields: [reviewedById], references: [id])
+  attachments Attachment[]
+  audioNotes  AudioNote[]
+}
+
+model Attachment {
+  id               String   @id @default(uuid())
+  dailyLogId       String?
+  stockInId        String?
+  safetyHazardId   String?
+  safetyIncidentId String?
+  archiveId        String?
+  machineryId      String?
+  changeId         String?
+  visaId           String?
+  fileName         String
+  filePath         String
+  fileType         String
+  fileSize         Int
+  url              String
+  hasWatermark     Boolean  @default(false)
+  gpsLat           Float?
+  gpsLng           Float?
+  createdAt        DateTime @default(now())
+
+  dailyLog  DailyLog? @relation(fields: [dailyLogId], references: [id])
+  stockIn   StockIn? @relation(fields: [stockInId], references: [id])
+  hazard    SafetyHazard? @relation(fields: [safetyHazardId], references: [id])
+  incident  SafetyIncident? @relation(fields: [safetyIncidentId], references: [id])
+  archive   Archive? @relation(fields: [archiveId], references: [id])
+  machinery Machinery? @relation(fields: [machineryId], references: [id])
+  change    DesignChange? @relation(fields: [changeId], references: [id])
+  visa      EngineeringVisa? @relation(fields: [visaId], references: [id])
+}
+
+model AudioNote {
+  id         String   @id @default(uuid())
+  dailyLogId String
+  fileName   String
+  filePath   String
+  transcript String?
+  createdAt  DateTime @default(now())
+
+  dailyLog DailyLog @relation(fields: [dailyLogId], references: [id])
+}
+
+model Material {
+  id           String   @id @default(uuid())
+  projectId    String
+  name         String
+  category     String
+  spec         String
+  unit         String
+  safetyStock  Float    @default(0)
+  currentStock Float    @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  project   Project @relation(fields: [projectId], references: [id])
+  stockIns  StockIn[]
+  stockOuts StockOut[]
+
+  @@unique([projectId, name, spec])
+}
+
+model StockIn {
+  id             String   @id @default(uuid())
+  projectId      String
+  materialId     String
+  billNo         String
+  supplier       String
+  quantity       Float
+  unitPrice      Float?
+  totalAmount    Float?
+  batchNo        String?
+  certificateUrl String?
+  ocrResult      String?
+  status         String   @default("draft")
+  submittedById  String
+  reviewedById   String?
+  reviewedAt     DateTime?
+  reviewComment  String?
+  createdAt      DateTime @default(now())
+
+  material    Material @relation(fields: [materialId], references: [id])
+  submittedBy User     @relation(fields: [submittedById], references: [id])
+  reviewedBy  User?    @relation("StockInReviewer", fields: [reviewedById], references: [id])
+  attachments Attachment[]
+}
+
+model StockOut {
+  id            String   @id @default(uuid())
+  projectId     String
+  materialId    String
+  billNo        String
+  receiver      String
+  usagePosition String
+  quantity      Float
+  status        String   @default("draft")
+  submittedById String
+  reviewedById  String?
+  reviewedAt    DateTime?
+  reviewComment String?
+  createdAt     DateTime @default(now())
+
+  material    Material @relation(fields: [materialId], references: [id])
+  submittedBy User     @relation(fields: [submittedById], references: [id])
+  reviewedBy  User?    @relation("StockOutReviewer", fields: [reviewedById], references: [id])
+}
+
+model Machinery {
+  id             String   @id @default(uuid())
+  projectId      String
+  name           String
+  code           String
+  model          String
+  operator       String
+  status         String   @default("onsite")
+  enteredAt      DateTime
+  leftAt         DateTime?
+  nextMaintenanceDate DateTime?
+  statusReview   String   @default("approved")
+  submittedById  String
+  reviewedById   String?
+
+  project     Project @relation(fields: [projectId], references: [id])
+  submittedBy User    @relation(fields: [submittedById], references: [id])
+  reviewedBy  User?   @relation("MachineryReviewer", fields: [reviewedById], references: [id])
+  maintenanceRecords MaintenanceRecord[]
+  shiftRecords ShiftRecord[]
+  attachments Attachment[]
+}
+
+model MaintenanceRecord {
+  id          String   @id @default(uuid())
+  machineryId String
+  content     String
+  cost        Float?
+  handledById String
+  createdAt   DateTime @default(now())
+
+  machinery Machinery @relation(fields: [machineryId], references: [id])
+  handledBy User @relation(fields: [handledById], references: [id])
+}
+
+model ShiftRecord {
+  id          String   @id @default(uuid())
+  machineryId String
+  workDate    DateTime
+  shiftHours  Float
+  workContent String
+  submittedById String
+
+  machinery Machinery @relation(fields: [machineryId], references: [id])
+  submittedBy User @relation(fields: [submittedById], references: [id])
+}
+
+model SafetyHazard {
+  id            String   @id @default(uuid())
+  projectId     String
+  title         String
+  area          String
+  riskLevel     String
+  description   String
+  rectification String?
+  status        String   @default("open")
+  dueDate       DateTime
+  submittedById String
+  reviewedById  String?
+  reviewedAt    DateTime?
+  reviewComment String?
+  createdAt     DateTime @default(now())
+
+  project     Project @relation(fields: [projectId], references: [id])
+  submittedBy User @relation(fields: [submittedById], references: [id])
+  reviewedBy  User? @relation("HazardReviewer", fields: [reviewedById], references: [id])
+  attachments Attachment[]
+}
+
+model SafetyIncident {
+  id            String   @id @default(uuid())
+  projectId     String
+  title         String
+  incidentDate  DateTime
+  level         String
+  description   String
+  status        String   @default("submitted")
+  submittedById String
+  reviewedById  String?
+  reviewedAt    DateTime?
+  reviewComment String?
+
+  project     Project @relation(fields: [projectId], references: [id])
+  submittedBy User @relation(fields: [submittedById], references: [id])
+  reviewedBy  User? @relation("IncidentReviewer", fields: [reviewedById], references: [id])
+  attachments Attachment[]
+}
+
+model Archive {
+  id            String   @id @default(uuid())
+  projectId     String
+  title         String
+  category      String
+  tags          String
+  version       String
+  status        String   @default("draft")
+  submittedById String
+  reviewedById  String?
+  reviewedAt    DateTime?
+  reviewComment String?
+  createdAt     DateTime @default(now())
+
+  project     Project @relation(fields: [projectId], references: [id])
+  submittedBy User @relation(fields: [submittedById], references: [id])
+  reviewedBy  User? @relation("ArchiveReviewer", fields: [reviewedById], references: [id])
+  attachments Attachment[]
+}
+
+model DesignChange {
+  id            String   @id @default(uuid())
+  projectId     String
+  changeNo      String   @unique
+  title         String
+  reason        String
+  content       String
+  impact        String
+  estimatedCost Float    @default(0)
+  status        String   @default("draft")
+  submittedById String
+  reviewedById  String?
+  reviewedAt    DateTime?
+  reviewComment String?
+  createdAt     DateTime @default(now())
+
+  project     Project @relation(fields: [projectId], references: [id])
+  submittedBy User @relation(fields: [submittedById], references: [id])
+  reviewedBy  User? @relation("ChangeReviewer", fields: [reviewedById], references: [id])
+  attachments Attachment[]
+}
+
+model EngineeringVisa {
+  id                   String   @id @default(uuid())
+  projectId            String
+  visaNo               String   @unique
+  title                String
+  visaType             String
+  visaReason           String
+  visaContent          String
+  constructionPosition String
+  quantities           String
+  totalAmount          Float    @default(0)
+  sealStatus           String   @default("none")
+  status               String   @default("draft")
+  submittedById        String
+  reviewedById         String?
+  reviewedAt           DateTime?
+  reviewComment        String?
+  createdAt            DateTime @default(now())
+
+  project     Project @relation(fields: [projectId], references: [id])
+  submittedBy User @relation(fields: [submittedById], references: [id])
+  reviewedBy  User? @relation("VisaReviewer", fields: [reviewedById], references: [id])
+  attachments Attachment[]
+}
+

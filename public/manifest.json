@@ -1,0 +1,17 @@
+{
+  "name": "施工现场综合管理平台",
+  "short_name": "现场管理",
+  "description": "施工日志、材料、机械、安全、档案、变更签证一体化管理",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#050608",
+  "theme_color": "#f5b642",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    }
+  ]
+}
+

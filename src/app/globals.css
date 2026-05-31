@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #050608;
+  --color-foreground: #e8edf5;
+  --color-muted: #94a3b8;
+  --color-panel: #0d1117;
+  --color-panel-soft: #131a24;
+  --color-border: #253044;
+  --color-brand: #f5b642;
+  --color-brand-soft: #3a2a12;
+  --color-success: #34d399;
+  --color-warning: #f59e0b;
+  --color-danger: #fb7185;
+  --font-sans: "Microsoft YaHei", "Noto Sans SC", "PingFang SC", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-width: 320px;
+  background:
+    radial-gradient(circle at top left, rgba(245, 182, 66, 0.14), transparent 32rem),
+    radial-gradient(circle at 82% 12%, rgba(56, 189, 248, 0.1), transparent 30rem),
+    linear-gradient(135deg, #050608 0%, #0b111c 52%, #111827 100%);
+  color: #e8edf5;
+  font-family: var(--font-sans);
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.glass-panel {
+  background: rgba(13, 17, 23, 0.78);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(18px);
+}
+
+.construction-grid {
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.06) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
