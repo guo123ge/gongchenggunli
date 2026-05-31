@@ -38,6 +38,7 @@ yarn-error.log*
 # local uploads and generated docs
 /uploads
 /prisma/dev.db
+/.local-data
 
 # vercel
 .vercel

@@ -1,20 +1,37 @@
 import { NextResponse } from "next/server";
-import { stockIns } from "@/lib/mock-data";
+import { addReviewItem, readStore, updateStore } from "@/lib/server-store";
 
 export async function GET() {
-  return NextResponse.json({ ok: true, data: stockIns });
+  const data = await readStore();
+  return NextResponse.json({ ok: true, data: data.stockIns });
 }
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
-  return NextResponse.json({
-    ok: true,
-    data: {
+  const created = await updateStore((data) => {
+    const material = data.materials.find((item) => item.id === body.materialId);
+    const item = {
       id: crypto.randomUUID(),
-      ...body,
+      materialId: String(body.materialId ?? ""),
+      materialName: material?.name ?? "未知材料",
+      billNo: String(body.billNo ?? `RK-${Date.now()}`),
+      quantity: Number(body.quantity ?? 0),
       status: "submitted",
-      message: "入库单已提交，审核通过后增加库存",
-    },
+      submittedBy: "当前用户",
+      createdAt: new Date().toLocaleString("zh-CN"),
+      supplier: String(body.supplier ?? "待补充"),
+    } as const;
+    data.stockIns.unshift(item);
+    addReviewItem(data, {
+      id: item.id,
+      targetType: "material",
+      title: `${item.materialName}入库 ${item.quantity}`,
+      submittedBy: item.submittedBy,
+      submittedAt: item.createdAt,
+      status: "submitted",
+      priority: "normal",
+    });
+    return item;
   });
+  return NextResponse.json({ ok: true, data: created });
 }
-
