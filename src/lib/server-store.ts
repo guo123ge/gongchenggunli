@@ -19,8 +19,11 @@ import type {
   DashboardSummary,
   Hazard,
   Machinery,
+  MaintenanceRecord,
   Material,
   ReviewItem,
+  SafetyIncident,
+  ShiftRecord,
   StockRecord,
   VisaRecord,
 } from "@/types";
@@ -32,7 +35,10 @@ export type StoreData = {
   stockIns: StockRecord[];
   stockOuts: StockRecord[];
   hazards: Hazard[];
+  incidents: SafetyIncident[];
   machinery: Machinery[];
+  maintenanceRecords: MaintenanceRecord[];
+  shiftRecords: ShiftRecord[];
   reviewItems: ReviewItem[];
   archiveFiles: ArchiveFile[];
   archives: ArchiveRecord[];
@@ -52,7 +58,39 @@ const initialData: StoreData = {
   stockIns,
   stockOuts,
   hazards,
+  incidents: [
+    {
+      id: "inc-001",
+      projectId: project.id,
+      title: "Sample safety incident",
+      incidentDate: "2026-05-30",
+      level: "medium",
+      description: "Initial incident record used to prove the safety incident workflow is wired to persistence.",
+      status: "submitted",
+      submittedBy: "Safety Officer",
+    },
+  ],
   machinery,
+  maintenanceRecords: [
+    {
+      id: "mt-001",
+      machineryId: machinery[0]?.id ?? "mc-001",
+      content: "Monthly maintenance",
+      cost: 1200,
+      handledBy: "Machinery Lead",
+      createdAt: "2026-05-31 09:00",
+    },
+  ],
+  shiftRecords: [
+    {
+      id: "sf-001",
+      machineryId: machinery[0]?.id ?? "mc-001",
+      workDate: "2026-05-31",
+      shiftHours: 8,
+      workContent: "Material lifting",
+      submittedBy: "Machinery Lead",
+    },
+  ],
   reviewItems,
   archives: [
     {
@@ -135,6 +173,9 @@ async function readStoreFile(): Promise<StoreData> {
   data.archives ??= initialData.archives;
   data.changes ??= initialData.changes;
   data.visas ??= initialData.visas;
+  data.incidents ??= initialData.incidents;
+  data.maintenanceRecords ??= initialData.maintenanceRecords;
+  data.shiftRecords ??= initialData.shiftRecords;
   return data;
 }
 

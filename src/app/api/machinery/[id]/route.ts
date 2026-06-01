@@ -38,6 +38,8 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   }
   await updateStore((data) => {
     data.machinery = data.machinery.filter((item) => item.id !== id);
+    data.maintenanceRecords = data.maintenanceRecords.filter((item) => item.machineryId !== id);
+    data.shiftRecords = data.shiftRecords.filter((item) => item.machineryId !== id);
   });
   return NextResponse.json({ ok: true, data: { id, deleted: true } });
 }

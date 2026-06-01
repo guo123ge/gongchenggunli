@@ -101,6 +101,19 @@ export type Hazard = {
   dueDate: string;
 };
 
+export type SafetyIncident = {
+  id: string;
+  projectId?: string;
+  title: string;
+  incidentDate: string;
+  level: RiskLevel;
+  description: string;
+  status: ReviewStatus | "closed";
+  submittedBy: string;
+  reviewedBy?: string;
+  reviewComment?: string;
+};
+
 export type Machinery = {
   id: string;
   name: string;
@@ -109,6 +122,24 @@ export type Machinery = {
   status: "onsite" | "maintenance" | "offsite";
   nextMaintenanceDate: string;
   shiftsThisMonth: number;
+};
+
+export type MaintenanceRecord = {
+  id: string;
+  machineryId: string;
+  content: string;
+  cost: number;
+  handledBy: string;
+  createdAt: string;
+};
+
+export type ShiftRecord = {
+  id: string;
+  machineryId: string;
+  workDate: string;
+  shiftHours: number;
+  workContent: string;
+  submittedBy: string;
 };
 
 export type ReviewItem = {

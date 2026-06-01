@@ -24,6 +24,21 @@ const updatedHazard = await request(`/api/safety/hazards/${hazard.id}`, {
   body: JSON.stringify({ status: "reviewing" }),
 });
 
+const incident = await request("/api/safety/incidents", {
+  method: "POST",
+  body: JSON.stringify({
+    title: "verify safety incident",
+    incidentDate: "2026-06-01",
+    level: "high",
+    description: "incident persistence verification",
+  }),
+});
+const updatedIncident = await request(`/api/safety/incidents/${incident.id}`, {
+  method: "PATCH",
+  body: JSON.stringify({ status: "closed", reviewComment: "verified" }),
+});
+const incidentDetail = await request(`/api/safety/incidents/${incident.id}`);
+
 const machine = await request("/api/machinery", {
   method: "POST",
   body: JSON.stringify({
@@ -31,6 +46,23 @@ const machine = await request("/api/machinery", {
     code: `MC-VERIFY-${Date.now()}`,
     operator: "验证员",
     nextMaintenanceDate: "2026-06-10",
+  }),
+});
+
+const maintenance = await request(`/api/machinery/${machine.id}/maintenance`, {
+  method: "POST",
+  body: JSON.stringify({
+    content: "verify maintenance record",
+    cost: 345,
+  }),
+});
+
+const shift = await request(`/api/machinery/${machine.id}/shifts`, {
+  method: "POST",
+  body: JSON.stringify({
+    workDate: "2026-06-01",
+    shiftHours: 7.5,
+    workContent: "verify shift record",
   }),
 });
 
@@ -69,16 +101,25 @@ const [hazards, machines, archives, changes, visas] = await Promise.all([
   request("/api/changes"),
   request("/api/visas"),
 ]);
+const [incidents, maintenanceRecords, shiftRecords] = await Promise.all([
+  request("/api/safety/incidents"),
+  request(`/api/machinery/${machine.id}/maintenance`),
+  request(`/api/machinery/${machine.id}/shifts`),
+]);
 
 for (const [name, list, item] of [
   ["hazard", hazards, updatedHazard],
+  ["incident", incidents, updatedIncident],
   ["machine", machines, machine],
+  ["maintenance", maintenanceRecords, maintenance],
+  ["shift", shiftRecords, shift],
   ["archive", archives, archive],
   ["change", changes, change],
   ["visa", visas, visa],
 ]) {
   if (!list.some((row) => row.id === item.id)) throw new Error(`${name} was not persisted`);
 }
+if (incidentDetail.id !== incident.id || incidentDetail.status !== "closed") throw new Error("incident detail was not updated");
 
 console.log(
   JSON.stringify(
@@ -86,7 +127,11 @@ console.log(
       ok: true,
       hazardId: hazard.id,
       hazardStatus: updatedHazard.status,
+      incidentId: incident.id,
+      incidentStatus: updatedIncident.status,
       machineId: machine.id,
+      maintenanceId: maintenance.id,
+      shiftId: shift.id,
       archiveId: archive.id,
       changeId: change.id,
       visaId: visa.id,
@@ -95,4 +140,3 @@ console.log(
     2,
   ),
 );
-

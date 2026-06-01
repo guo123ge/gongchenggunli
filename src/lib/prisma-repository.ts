@@ -7,9 +7,12 @@ import type {
   DailyLog,
   Hazard,
   Machinery,
+  MaintenanceRecord,
   Material,
   Project,
   ReviewItem,
+  SafetyIncident,
+  ShiftRecord,
   StockRecord,
   VisaRecord,
 } from "@/types";
@@ -460,6 +463,84 @@ export async function updatePrismaHazard(id: string, body: Record<string, unknow
   };
 }
 
+export async function getPrismaIncidents(): Promise<SafetyIncident[]> {
+  const rows = await prisma.safetyIncident.findMany({
+    include: { submittedBy: true, reviewedBy: true },
+    orderBy: { incidentDate: "desc" },
+  });
+  return rows.map((item) => ({
+    id: item.id,
+    projectId: item.projectId,
+    title: item.title,
+    incidentDate: item.incidentDate.toISOString().slice(0, 10),
+    level: item.level as SafetyIncident["level"],
+    description: item.description,
+    status: item.status as SafetyIncident["status"],
+    submittedBy: item.submittedBy.displayName,
+    reviewedBy: item.reviewedBy?.displayName,
+    reviewComment: item.reviewComment ?? undefined,
+  }));
+}
+
+export async function createPrismaIncident(body: Record<string, unknown>): Promise<SafetyIncident> {
+  const projectId = String(body.projectId ?? (await getPrismaProjects())[0]?.id ?? "");
+  if (!projectId) throw new Error("Prisma backend has no project seed data. Run npm.cmd run db:seed.");
+  const submittedById = await getDefaultSubmittedById("safe");
+  const created = await prisma.safetyIncident.create({
+    data: {
+      projectId,
+      title: String(body.title ?? "Untitled safety incident"),
+      incidentDate: new Date(String(body.incidentDate ?? new Date().toISOString())),
+      level: String(body.level ?? body.riskLevel ?? "medium"),
+      description: String(body.description ?? body.title ?? "Pending incident description"),
+      status: String(body.status ?? "submitted"),
+      submittedById,
+    },
+    include: { submittedBy: true, reviewedBy: true },
+  });
+  return {
+    id: created.id,
+    projectId: created.projectId,
+    title: created.title,
+    incidentDate: created.incidentDate.toISOString().slice(0, 10),
+    level: created.level as SafetyIncident["level"],
+    description: created.description,
+    status: created.status as SafetyIncident["status"],
+    submittedBy: created.submittedBy.displayName,
+    reviewedBy: created.reviewedBy?.displayName,
+    reviewComment: created.reviewComment ?? undefined,
+  };
+}
+
+export async function updatePrismaIncident(id: string, body: Record<string, unknown>): Promise<SafetyIncident | null> {
+  const exists = await prisma.safetyIncident.findUnique({ where: { id } });
+  if (!exists) return null;
+  const updated = await prisma.safetyIncident.update({
+    where: { id },
+    data: {
+      title: typeof body.title === "string" ? body.title : undefined,
+      incidentDate: body.incidentDate === undefined ? undefined : new Date(String(body.incidentDate)),
+      level: typeof body.level === "string" ? body.level : typeof body.riskLevel === "string" ? body.riskLevel : undefined,
+      description: typeof body.description === "string" ? body.description : undefined,
+      status: typeof body.status === "string" ? body.status : undefined,
+      reviewComment: typeof body.reviewComment === "string" ? body.reviewComment : undefined,
+    },
+    include: { submittedBy: true, reviewedBy: true },
+  });
+  return {
+    id: updated.id,
+    projectId: updated.projectId,
+    title: updated.title,
+    incidentDate: updated.incidentDate.toISOString().slice(0, 10),
+    level: updated.level as SafetyIncident["level"],
+    description: updated.description,
+    status: updated.status as SafetyIncident["status"],
+    submittedBy: updated.submittedBy.displayName,
+    reviewedBy: updated.reviewedBy?.displayName,
+    reviewComment: updated.reviewComment ?? undefined,
+  };
+}
+
 export async function getPrismaMachinery(): Promise<Machinery[]> {
   const rows = await prisma.machinery.findMany({
     include: { shiftRecords: true },
@@ -532,8 +613,91 @@ export async function updatePrismaMachinery(id: string, body: Record<string, unk
 }
 
 export async function deletePrismaMachinery(id: string) {
-  const result = await prisma.machinery.deleteMany({ where: { id } });
-  return result.count > 0;
+  const exists = await prisma.machinery.findUnique({ where: { id } });
+  if (!exists) return false;
+  await prisma.$transaction([
+    prisma.maintenanceRecord.deleteMany({ where: { machineryId: id } }),
+    prisma.shiftRecord.deleteMany({ where: { machineryId: id } }),
+    prisma.machinery.delete({ where: { id } }),
+  ]);
+  return true;
+}
+
+export async function getPrismaMaintenanceRecords(machineryId: string): Promise<MaintenanceRecord[]> {
+  const rows = await prisma.maintenanceRecord.findMany({
+    where: { machineryId },
+    include: { handledBy: true },
+    orderBy: { createdAt: "desc" },
+  });
+  return rows.map((item) => ({
+    id: item.id,
+    machineryId: item.machineryId,
+    content: item.content,
+    cost: item.cost ?? 0,
+    handledBy: item.handledBy.displayName,
+    createdAt: item.createdAt.toLocaleString("zh-CN"),
+  }));
+}
+
+export async function createPrismaMaintenanceRecord(machineryId: string, body: Record<string, unknown>): Promise<MaintenanceRecord> {
+  await prisma.machinery.findUniqueOrThrow({ where: { id: machineryId } });
+  const handledById = await getDefaultSubmittedById("mach");
+  const created = await prisma.maintenanceRecord.create({
+    data: {
+      machineryId,
+      content: String(body.content ?? "Maintenance record"),
+      cost: Number(body.cost ?? 0),
+      handledById,
+    },
+    include: { handledBy: true },
+  });
+  return {
+    id: created.id,
+    machineryId: created.machineryId,
+    content: created.content,
+    cost: created.cost ?? 0,
+    handledBy: created.handledBy.displayName,
+    createdAt: created.createdAt.toLocaleString("zh-CN"),
+  };
+}
+
+export async function getPrismaShiftRecords(machineryId: string): Promise<ShiftRecord[]> {
+  const rows = await prisma.shiftRecord.findMany({
+    where: { machineryId },
+    include: { submittedBy: true },
+    orderBy: { workDate: "desc" },
+  });
+  return rows.map((item) => ({
+    id: item.id,
+    machineryId: item.machineryId,
+    workDate: item.workDate.toISOString().slice(0, 10),
+    shiftHours: item.shiftHours,
+    workContent: item.workContent,
+    submittedBy: item.submittedBy.displayName,
+  }));
+}
+
+export async function createPrismaShiftRecord(machineryId: string, body: Record<string, unknown>): Promise<ShiftRecord> {
+  await prisma.machinery.findUniqueOrThrow({ where: { id: machineryId } });
+  const submittedById = await getDefaultSubmittedById("mach");
+  const created = await prisma.shiftRecord.create({
+    data: {
+      machineryId,
+      workDate: new Date(String(body.workDate ?? new Date().toISOString())),
+      shiftHours: Number(body.shiftHours ?? 0),
+      workContent: String(body.workContent ?? "Shift work"),
+      submittedById,
+    },
+    include: { submittedBy: true },
+  });
+  return {
+    id: created.id,
+    machineryId: created.machineryId,
+    workDate: created.workDate.toISOString().slice(0, 10),
+    shiftHours: created.shiftHours,
+    workContent: created.workContent,
+    submittedBy: created.submittedBy.displayName,
+  };
 }
 
 export async function getPrismaArchives(): Promise<ArchiveRecord[]> {
@@ -915,7 +1079,10 @@ export async function readPrismaStore(): Promise<StoreData> {
     stockIns,
     stockOuts,
     hazards,
+    incidents,
     machinery,
+    maintenanceRecords,
+    shiftRecords,
     reviewItems,
     archives,
     archiveFiles,
@@ -928,7 +1095,32 @@ export async function readPrismaStore(): Promise<StoreData> {
     getPrismaStockIns(),
     getPrismaStockOuts(),
     getPrismaHazards(),
+    getPrismaIncidents(),
     getPrismaMachinery(),
+    prisma.maintenanceRecord
+      .findMany({ include: { handledBy: true }, orderBy: { createdAt: "desc" } })
+      .then((rows) =>
+        rows.map((item) => ({
+          id: item.id,
+          machineryId: item.machineryId,
+          content: item.content,
+          cost: item.cost ?? 0,
+          handledBy: item.handledBy.displayName,
+          createdAt: item.createdAt.toLocaleString("zh-CN"),
+        })),
+      ),
+    prisma.shiftRecord
+      .findMany({ include: { submittedBy: true }, orderBy: { workDate: "desc" } })
+      .then((rows) =>
+        rows.map((item) => ({
+          id: item.id,
+          machineryId: item.machineryId,
+          workDate: item.workDate.toISOString().slice(0, 10),
+          shiftHours: item.shiftHours,
+          workContent: item.workContent,
+          submittedBy: item.submittedBy.displayName,
+        })),
+      ),
     getPrismaReviewItems(),
     getPrismaArchives(),
     getPrismaArchiveFiles(),
@@ -946,7 +1138,10 @@ export async function readPrismaStore(): Promise<StoreData> {
     stockIns,
     stockOuts,
     hazards,
+    incidents,
     machinery,
+    maintenanceRecords,
+    shiftRecords,
     reviewItems,
     archives,
     archiveFiles,
