@@ -19,7 +19,8 @@
     "verify:extended": "node scripts/verify-extended-modules.mjs",
     "verify:pages": "node scripts/verify-page-store-binding.mjs",
     "verify:reports": "node scripts/verify-report-export-workflow.mjs",
-    "verify:registration": "node scripts/verify-registration-workflow.mjs"
+    "verify:registration": "node scripts/verify-registration-workflow.mjs",
+    "verify:notifications": "node scripts/verify-notification-workflow.mjs"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",
