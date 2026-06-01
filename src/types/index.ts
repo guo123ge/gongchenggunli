@@ -121,6 +121,38 @@ export type ReviewItem = {
   priority: "normal" | "urgent";
 };
 
+export type ArchiveRecord = {
+  id: string;
+  title: string;
+  category: string;
+  tags: string[];
+  version: string;
+  status: ReviewStatus;
+  submittedBy: string;
+  createdAt: string;
+};
+
+export type ChangeRecord = {
+  id: string;
+  title: string;
+  reason: string;
+  content: string;
+  estimatedCost: number;
+  status: ReviewStatus;
+  submittedBy: string;
+  createdAt: string;
+};
+
+export type VisaRecord = {
+  id: string;
+  title: string;
+  visaType: string;
+  totalAmount: number;
+  status: ReviewStatus;
+  submittedBy: string;
+  createdAt: string;
+};
+
 export type DashboardSummary = {
   pendingReviews: number;
   overdueItems: number;

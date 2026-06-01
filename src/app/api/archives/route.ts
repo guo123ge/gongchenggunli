@@ -1,15 +1,28 @@
 import { NextResponse } from "next/server";
-
-const archives = [
-  { id: "ar-001", title: "地下室防水专项方案", category: "方案", tags: ["防水", "地下室"], version: "v1.2", status: "approved" },
-  { id: "ar-002", title: "钢筋原材复试报告", category: "试验", tags: ["钢筋", "复试"], version: "v1.0", status: "submitted" },
-];
+import { readStore, updateStore } from "@/lib/server-store";
+import type { ArchiveRecord } from "@/types";
 
 export async function GET() {
-  return NextResponse.json({ ok: true, data: archives });
+  const data = await readStore();
+  return NextResponse.json({ ok: true, data: data.archives });
 }
 
 export async function POST(request: Request) {
-  return NextResponse.json({ ok: true, data: { id: crypto.randomUUID(), ...(await request.json().catch(() => ({}))), status: "submitted" } });
+  const body = await request.json().catch(() => ({}));
+  const created = await updateStore((data) => {
+    const item: ArchiveRecord = {
+      id: crypto.randomUUID(),
+      title: String(body.title ?? "未命名档案"),
+      category: String(body.category ?? "其他"),
+      tags: Array.isArray(body.tags) ? body.tags : String(body.tags ?? "").split(",").filter(Boolean),
+      version: String(body.version ?? "v1.0"),
+      status: body.status ?? "submitted",
+      submittedBy: String(body.submittedBy ?? "宋资料"),
+      createdAt: new Date().toLocaleString("zh-CN"),
+    };
+    data.archives.unshift(item);
+    return item;
+  });
+  return NextResponse.json({ ok: true, data: created });
 }
 

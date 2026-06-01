@@ -1,10 +1,27 @@
 import { NextResponse } from "next/server";
+import { readStore, updateStore } from "@/lib/server-store";
+import type { VisaRecord } from "@/types";
 
 export async function GET() {
-  return NextResponse.json({ ok: true, data: [{ id: "visa-001", title: "夜间抢工增加照明台班", totalAmount: 5760, status: "draft" }] });
+  const data = await readStore();
+  return NextResponse.json({ ok: true, data: data.visas });
 }
 
 export async function POST(request: Request) {
-  return NextResponse.json({ ok: true, data: { id: crypto.randomUUID(), ...(await request.json().catch(() => ({}))), status: "submitted" } });
+  const body = await request.json().catch(() => ({}));
+  const created = await updateStore((data) => {
+    const item: VisaRecord = {
+      id: crypto.randomUUID(),
+      title: String(body.title ?? "未命名签证"),
+      visaType: String(body.visaType ?? "standard"),
+      totalAmount: Number(body.totalAmount ?? body.amount ?? 0),
+      status: body.status ?? "submitted",
+      submittedBy: String(body.submittedBy ?? "吴技术"),
+      createdAt: new Date().toLocaleString("zh-CN"),
+    };
+    data.visas.unshift(item);
+    return item;
+  });
+  return NextResponse.json({ ok: true, data: created });
 }
 

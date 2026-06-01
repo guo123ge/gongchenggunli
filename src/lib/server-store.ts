@@ -11,7 +11,19 @@ import {
   stockIns,
   stockOuts,
 } from "./mock-data";
-import type { ArchiveFile, DailyLog, DashboardSummary, Hazard, Machinery, Material, ReviewItem, StockRecord } from "@/types";
+import type {
+  ArchiveFile,
+  ArchiveRecord,
+  ChangeRecord,
+  DailyLog,
+  DashboardSummary,
+  Hazard,
+  Machinery,
+  Material,
+  ReviewItem,
+  StockRecord,
+  VisaRecord,
+} from "@/types";
 
 type StoreData = {
   project: typeof project;
@@ -23,6 +35,9 @@ type StoreData = {
   machinery: Machinery[];
   reviewItems: ReviewItem[];
   archiveFiles: ArchiveFile[];
+  archives: ArchiveRecord[];
+  changes: ChangeRecord[];
+  visas: VisaRecord[];
 };
 
 const dataDir = path.join(process.cwd(), ".local-data");
@@ -37,6 +52,51 @@ const initialData: StoreData = {
   hazards,
   machinery,
   reviewItems,
+  archives: [
+    {
+      id: "ar-001",
+      title: "地下室防水专项方案",
+      category: "方案",
+      tags: ["防水", "地下室"],
+      version: "v1.2",
+      status: "approved",
+      submittedBy: "宋资料",
+      createdAt: "2026-05-30 10:00",
+    },
+    {
+      id: "ar-002",
+      title: "钢筋原材复试报告",
+      category: "试验",
+      tags: ["钢筋", "复试"],
+      version: "v1.0",
+      status: "submitted",
+      submittedBy: "宋资料",
+      createdAt: "2026-05-31 16:00",
+    },
+  ],
+  changes: [
+    {
+      id: "chg-001",
+      title: "地下室集水坑位置调整",
+      reason: "现场管线综合调整",
+      content: "集水坑向东偏移 600mm，避让主排水管线。",
+      estimatedCost: 18600,
+      status: "submitted",
+      submittedBy: "吴技术",
+      createdAt: "2026-05-31 15:00",
+    },
+  ],
+  visas: [
+    {
+      id: "visa-001",
+      title: "夜间抢工增加照明台班",
+      visaType: "material_machinery",
+      totalAmount: 5760,
+      status: "draft",
+      submittedBy: "吴技术",
+      createdAt: "2026-05-31 18:30",
+    },
+  ],
   archiveFiles: [
     {
       id: "file-001",
@@ -66,6 +126,9 @@ export async function readStore(): Promise<StoreData> {
   const raw = await readFile(dataFile, "utf8");
   const data = JSON.parse(raw) as StoreData;
   data.archiveFiles ??= initialData.archiveFiles;
+  data.archives ??= initialData.archives;
+  data.changes ??= initialData.changes;
+  data.visas ??= initialData.visas;
   return data;
 }
 

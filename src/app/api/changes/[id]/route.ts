@@ -1,14 +1,32 @@
 import { NextResponse } from "next/server";
+import { readStore, updateStore } from "@/lib/server-store";
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  return NextResponse.json({ ok: true, data: { id: (await params).id, title: "地下室集水坑位置调整", estimatedCost: 18600, status: "submitted" } });
+  const { id } = await params;
+  const data = await readStore();
+  const item = data.changes.find((change) => change.id === id);
+  if (!item) return NextResponse.json({ ok: false, error: "设计变更不存在" }, { status: 404 });
+  return NextResponse.json({ ok: true, data: item });
 }
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  return NextResponse.json({ ok: true, data: { id: (await params).id, ...(await request.json().catch(() => ({}))) } });
+  const { id } = await params;
+  const body = await request.json().catch(() => ({}));
+  const updated = await updateStore((data) => {
+    const index = data.changes.findIndex((item) => item.id === id);
+    if (index === -1) return null;
+    data.changes[index] = { ...data.changes[index], ...body };
+    return data.changes[index];
+  });
+  if (!updated) return NextResponse.json({ ok: false, error: "设计变更不存在" }, { status: 404 });
+  return NextResponse.json({ ok: true, data: updated });
 }
 
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  return NextResponse.json({ ok: true, data: { id: (await params).id, deleted: true } });
+  const { id } = await params;
+  await updateStore((data) => {
+    data.changes = data.changes.filter((item) => item.id !== id);
+  });
+  return NextResponse.json({ ok: true, data: { id, deleted: true } });
 }
 

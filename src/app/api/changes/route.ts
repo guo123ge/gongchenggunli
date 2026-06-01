@@ -1,10 +1,28 @@
 import { NextResponse } from "next/server";
+import { readStore, updateStore } from "@/lib/server-store";
+import type { ChangeRecord } from "@/types";
 
 export async function GET() {
-  return NextResponse.json({ ok: true, data: [{ id: "chg-001", title: "地下室集水坑位置调整", estimatedCost: 18600, status: "submitted" }] });
+  const data = await readStore();
+  return NextResponse.json({ ok: true, data: data.changes });
 }
 
 export async function POST(request: Request) {
-  return NextResponse.json({ ok: true, data: { id: crypto.randomUUID(), ...(await request.json().catch(() => ({}))), status: "submitted" } });
+  const body = await request.json().catch(() => ({}));
+  const created = await updateStore((data) => {
+    const item: ChangeRecord = {
+      id: crypto.randomUUID(),
+      title: String(body.title ?? "未命名变更"),
+      reason: String(body.reason ?? "待补充"),
+      content: String(body.content ?? ""),
+      estimatedCost: Number(body.estimatedCost ?? body.amount ?? 0),
+      status: body.status ?? "submitted",
+      submittedBy: String(body.submittedBy ?? "吴技术"),
+      createdAt: new Date().toLocaleString("zh-CN"),
+    };
+    data.changes.unshift(item);
+    return item;
+  });
+  return NextResponse.json({ ok: true, data: created });
 }
 
