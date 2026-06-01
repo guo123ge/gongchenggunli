@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
-import { readStore, updateStore } from "@/lib/server-store";
+import { readAppData } from "@/lib/app-data";
+import { updateStore } from "@/lib/server-store";
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const data = await readStore();
+  const data = await readAppData();
   const archive = data.archives.find((item) => item.id === id);
   if (!archive) return NextResponse.json({ ok: false, error: "档案不存在" }, { status: 404 });
   return NextResponse.json({ ok: true, data: archive });
@@ -30,4 +31,3 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   });
   return NextResponse.json({ ok: true, data: { id, deleted: true } });
 }
-

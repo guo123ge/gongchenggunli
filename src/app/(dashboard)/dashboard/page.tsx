@@ -5,12 +5,13 @@ import { RecentLogs } from "@/components/dashboard/recent-logs";
 import { SafetyOverview } from "@/components/dashboard/safety-overview";
 import { StatCards } from "@/components/dashboard/stat-cards";
 import { CommandPalette } from "@/components/layout/command-palette";
-import { calculateDashboardSummary, readStore } from "@/lib/server-store";
+import { readAppData } from "@/lib/app-data";
+import { calculateDashboardSummary } from "@/lib/server-store";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const data = await readStore();
+  const data = await readAppData();
   const summary = calculateDashboardSummary(data);
   const todayLabor = data.dailyLogs[0]?.laborCount ?? 0;
   return (

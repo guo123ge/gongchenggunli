@@ -2,12 +2,12 @@ import { ReviewFlow } from "@/components/shared/review-flow";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MODULE_LABELS } from "@/lib/constants";
-import { readStore } from "@/lib/server-store";
+import { readAppData } from "@/lib/app-data";
 
 export const dynamic = "force-dynamic";
 
 export default async function ReviewPage() {
-  const data = await readStore();
+  const data = await readAppData();
   return (
     <div className="space-y-6">
       <div>

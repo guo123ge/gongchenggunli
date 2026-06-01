@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
+import { isPrismaBackendEnabled } from "@/lib/data-backend";
+import { getPrismaArchives } from "@/lib/prisma-repository";
 import { readStore, updateStore } from "@/lib/server-store";
 import type { ArchiveRecord } from "@/types";
 
 export async function GET() {
+  if (isPrismaBackendEnabled()) return NextResponse.json({ ok: true, data: await getPrismaArchives() });
   const data = await readStore();
   return NextResponse.json({ ok: true, data: data.archives });
 }
@@ -25,4 +28,3 @@ export async function POST(request: Request) {
   });
   return NextResponse.json({ ok: true, data: created });
 }
-

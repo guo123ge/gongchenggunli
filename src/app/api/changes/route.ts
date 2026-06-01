@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
+import { isPrismaBackendEnabled } from "@/lib/data-backend";
+import { getPrismaChanges } from "@/lib/prisma-repository";
 import { readStore, updateStore } from "@/lib/server-store";
 import type { ChangeRecord } from "@/types";
 
 export async function GET() {
+  if (isPrismaBackendEnabled()) return NextResponse.json({ ok: true, data: await getPrismaChanges() });
   const data = await readStore();
   return NextResponse.json({ ok: true, data: data.changes });
 }
@@ -25,4 +28,3 @@ export async function POST(request: Request) {
   });
   return NextResponse.json({ ok: true, data: created });
 }
-

@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
-import { readStore, updateStore } from "@/lib/server-store";
+import { readAppData } from "@/lib/app-data";
+import { updateStore } from "@/lib/server-store";
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const data = await readStore();
+  const data = await readAppData();
   const item = data.hazards.find((hazard) => hazard.id === id);
   if (!item) return NextResponse.json({ ok: false, error: "隐患不存在" }, { status: 404 });
   return NextResponse.json({ ok: true, data: item });
@@ -21,4 +22,3 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   if (!updated) return NextResponse.json({ ok: false, error: "隐患不存在" }, { status: 404 });
   return NextResponse.json({ ok: true, data: updated });
 }
-

@@ -25,7 +25,7 @@ import type {
   VisaRecord,
 } from "@/types";
 
-type StoreData = {
+export type StoreData = {
   project: typeof project;
   dailyLogs: DailyLog[];
   materials: Material[];

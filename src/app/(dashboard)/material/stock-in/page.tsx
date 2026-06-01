@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { MaterialLedger } from "@/components/material/material-ledger";
 import { Button } from "@/components/ui/button";
-import { readStore } from "@/lib/server-store";
+import { readAppData } from "@/lib/app-data";
 
 export const dynamic = "force-dynamic";
 
 export default async function StockInPage() {
-  const data = await readStore();
+  const data = await readAppData();
   return (
     <div className="space-y-6">
       <div className="flex items-end justify-between">

@@ -4,12 +4,12 @@ import { QuantityTable } from "@/components/change-visa/quantity-table";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { readStore } from "@/lib/server-store";
+import { readAppData } from "@/lib/app-data";
 
 export const dynamic = "force-dynamic";
 
 export default async function ChangeVisaPage() {
-  const data = await readStore();
+  const data = await readAppData();
 
   return (
     <div className="space-y-6">

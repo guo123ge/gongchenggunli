@@ -1,14 +1,14 @@
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MaintenanceForm } from "@/components/machinery/maintenance-form";
 import { ShiftForm } from "@/components/machinery/shift-form";
-import { readStore } from "@/lib/server-store";
+import { readAppData } from "@/lib/app-data";
 import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
 export default async function MachineryDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const data = await readStore();
+  const data = await readAppData();
   const item = data.machinery.find((machine) => machine.id === id);
   if (!item) notFound();
 

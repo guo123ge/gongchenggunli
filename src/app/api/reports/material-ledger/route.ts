@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { readStore } from "@/lib/server-store";
+import { readAppData } from "@/lib/app-data";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const data = await readStore();
+  const data = await readAppData();
   return NextResponse.json({
     ok: true,
     data: data.materials.map((item) => ({

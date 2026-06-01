@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { MachineryBoard } from "@/components/machinery/machinery-board";
 import { Button } from "@/components/ui/button";
-import { readStore } from "@/lib/server-store";
+import { readAppData } from "@/lib/app-data";
 
 export const dynamic = "force-dynamic";
 
 export default async function MachineryPage() {
-  const data = await readStore();
+  const data = await readAppData();
 
   return (
     <div className="space-y-6">

@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
-import { readStore, updateStore } from "@/lib/server-store";
+import { readAppData } from "@/lib/app-data";
+import { updateStore } from "@/lib/server-store";
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const data = await readStore();
+  const data = await readAppData();
   const item = data.changes.find((change) => change.id === id);
   if (!item) return NextResponse.json({ ok: false, error: "设计变更不存在" }, { status: 404 });
   return NextResponse.json({ ok: true, data: item });
@@ -29,4 +30,3 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   });
   return NextResponse.json({ ok: true, data: { id, deleted: true } });
 }
-

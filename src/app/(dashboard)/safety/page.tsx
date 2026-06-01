@@ -5,12 +5,12 @@ import { RiskBadge } from "@/components/shared/risk-badge";
 import { RectificationFlow } from "@/components/safety/rectification-flow";
 import { Checklist } from "@/components/safety/checklist";
 import { Heatmap } from "@/components/safety/heatmap";
-import { readStore } from "@/lib/server-store";
+import { readAppData } from "@/lib/app-data";
 
 export const dynamic = "force-dynamic";
 
 export default async function SafetyPage() {
-  const data = await readStore();
+  const data = await readAppData();
 
   return (
     <div className="space-y-6">

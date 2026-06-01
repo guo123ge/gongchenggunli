@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
+import { isPrismaBackendEnabled } from "@/lib/data-backend";
+import { getPrismaHazards } from "@/lib/prisma-repository";
 import { readStore, updateStore } from "@/lib/server-store";
 import type { Hazard } from "@/types";
 
 export async function GET() {
+  if (isPrismaBackendEnabled()) return NextResponse.json({ ok: true, data: await getPrismaHazards() });
   const data = await readStore();
   return NextResponse.json({ ok: true, data: data.hazards });
 }
@@ -24,4 +27,3 @@ export async function POST(request: Request) {
   });
   return NextResponse.json({ ok: true, data: created });
 }
-

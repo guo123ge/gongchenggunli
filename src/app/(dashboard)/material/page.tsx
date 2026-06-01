@@ -2,12 +2,12 @@ import Link from "next/link";
 import { InventoryBoard } from "@/components/material/inventory-board";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { readStore } from "@/lib/server-store";
+import { readAppData } from "@/lib/app-data";
 
 export const dynamic = "force-dynamic";
 
 export default async function MaterialPage() {
-  const data = await readStore();
+  const data = await readAppData();
   return (
     <div className="space-y-6">
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">

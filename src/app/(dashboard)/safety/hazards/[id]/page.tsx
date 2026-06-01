@@ -1,14 +1,14 @@
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { RectificationFlow } from "@/components/safety/rectification-flow";
 import { RiskBadge } from "@/components/shared/risk-badge";
-import { readStore } from "@/lib/server-store";
+import { readAppData } from "@/lib/app-data";
 import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
 export default async function HazardDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const data = await readStore();
+  const data = await readAppData();
   const hazard = data.hazards.find((item) => item.id === id);
   if (!hazard) notFound();
 

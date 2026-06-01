@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
-import { calculateDashboardSummary, readStore } from "@/lib/server-store";
+import { readAppData } from "@/lib/app-data";
+import { calculateDashboardSummary } from "@/lib/server-store";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const data = await readStore();
+  const data = await readAppData();
   return NextResponse.json({
     ok: true,
     data: {
