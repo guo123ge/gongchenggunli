@@ -1,8 +1,12 @@
 import { buildCsv } from "@/lib/export";
+import { readStore } from "@/lib/server-store";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(_request: Request, { params }: { params: Promise<{ type: string }> }) {
   const { type } = await params;
-  const csv = buildCsv(type);
+  const data = await readStore();
+  const csv = buildCsv(type, data);
   return new Response(`\uFEFF${csv}`, {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
@@ -10,4 +14,3 @@ export async function GET(_request: Request, { params }: { params: Promise<{ typ
     },
   });
 }
-

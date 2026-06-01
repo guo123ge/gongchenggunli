@@ -1,16 +1,40 @@
-import { dailyLogs, materials } from "./mock-data";
+import type { DailyLog, Material } from "@/types";
 
-export function buildCsv(type: string) {
+type CsvData = {
+  dailyLogs: DailyLog[];
+  materials: Material[];
+};
+
+function csvCell(value: string | number | undefined) {
+  const text = String(value ?? "");
+  return /[",\n\r]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+}
+
+function csvRow(values: Array<string | number | undefined>) {
+  return values.map(csvCell).join(",");
+}
+
+export function buildCsv(type: string, data: CsvData) {
   if (type === "material-ledger") {
     return [
-      ["材料", "规格", "单位", "当前库存", "安全库存"].join(","),
-      ...materials.map((item) => [item.name, item.spec, item.unit, item.currentStock, item.safetyStock].join(",")),
+      csvRow(["Material", "Spec", "Unit", "Current stock", "Safety stock", "Monthly in", "Monthly out"]),
+      ...data.materials.map((item) =>
+        csvRow([item.name, item.spec, item.unit, item.currentStock, item.safetyStock, item.monthlyIn, item.monthlyOut]),
+      ),
+    ].join("\n");
+  }
+
+  if (type === "daily-log-summary") {
+    return [
+      csvRow(["Date", "Position", "Process", "Labor count", "Status", "Submitted by"]),
+      ...data.dailyLogs.map((item) =>
+        csvRow([item.workDate, item.workPosition, item.workProcess, item.laborCount, item.status, item.submittedBy]),
+      ),
     ].join("\n");
   }
 
   return [
-    ["日期", "部位", "工序", "人数", "状态"].join(","),
-    ...dailyLogs.map((item) => [item.workDate, item.workPosition, item.workProcess, item.laborCount, item.status].join(",")),
+    csvRow(["Type", "Message"]),
+    csvRow([type, "Unsupported export type. Available: daily-log-summary, material-ledger"]),
   ].join("\n");
 }
-

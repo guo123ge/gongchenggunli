@@ -1,16 +1,22 @@
 import { NextResponse } from "next/server";
-import { dailyLogs } from "@/lib/mock-data";
+import { readStore } from "@/lib/server-store";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const totalLabor = dailyLogs.reduce((sum, item) => sum + item.laborCount, 0);
+  const data = await readStore();
+  const totalLabor = data.dailyLogs.reduce((sum, item) => sum + item.laborCount, 0);
   return NextResponse.json({
     ok: true,
     data: {
       period: "2026-W22",
-      logCount: dailyLogs.length,
+      logCount: data.dailyLogs.length,
       totalLabor,
-      keyWorks: dailyLogs.map((item) => item.workContent),
+      keyWorks: data.dailyLogs.map((item) => item.workContent),
+      statusCounts: data.dailyLogs.reduce<Record<string, number>>((counts, item) => {
+        counts[item.status] = (counts[item.status] ?? 0) + 1;
+        return counts;
+      }, {}),
     },
   });
 }
-

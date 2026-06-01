@@ -14,7 +14,8 @@
     "verify:archive": "node scripts/verify-file-archive-workflow.mjs",
     "verify:prisma": "node scripts/verify-prisma-backend.mjs",
     "verify:extended": "node scripts/verify-extended-modules.mjs",
-    "verify:pages": "node scripts/verify-page-store-binding.mjs"
+    "verify:pages": "node scripts/verify-page-store-binding.mjs",
+    "verify:reports": "node scripts/verify-report-export-workflow.mjs"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",
