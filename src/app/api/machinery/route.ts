@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { isPrismaBackendEnabled } from "@/lib/data-backend";
-import { getPrismaMachinery } from "@/lib/prisma-repository";
+import { createPrismaMachinery, getPrismaMachinery } from "@/lib/prisma-repository";
 import { readStore, updateStore } from "@/lib/server-store";
 import type { Machinery } from "@/types";
 
@@ -12,6 +12,10 @@ export async function GET() {
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
+  if (isPrismaBackendEnabled()) {
+    const created = await createPrismaMachinery(body);
+    return NextResponse.json({ ok: true, data: created });
+  }
   const created = await updateStore((data) => {
     const item: Machinery = {
       id: crypto.randomUUID(),

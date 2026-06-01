@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
+import { isPrismaBackendEnabled } from "@/lib/data-backend";
+import { createPrismaArchiveFile, getPrismaArchiveFilesByArchiveId } from "@/lib/prisma-repository";
 import { readStore, updateStore } from "@/lib/server-store";
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  if (isPrismaBackendEnabled()) return NextResponse.json({ ok: true, data: await getPrismaArchiveFilesByArchiveId(id) });
   const data = await readStore();
   return NextResponse.json({
     ok: true,
@@ -13,6 +16,10 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const body = await request.json().catch(() => ({}));
+  if (isPrismaBackendEnabled()) {
+    const created = await createPrismaArchiveFile(id, body);
+    return NextResponse.json({ ok: true, data: created });
+  }
   const created = await updateStore((data) => {
     const existingVersions = data.archiveFiles.filter((file) => file.archiveId === id).length;
     const file = {
@@ -32,4 +39,3 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   return NextResponse.json({ ok: true, data: created });
 }
-

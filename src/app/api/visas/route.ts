@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { isPrismaBackendEnabled } from "@/lib/data-backend";
-import { getPrismaVisas } from "@/lib/prisma-repository";
+import { createPrismaVisa, getPrismaVisas } from "@/lib/prisma-repository";
 import { readStore, updateStore } from "@/lib/server-store";
 import type { VisaRecord } from "@/types";
 
@@ -12,6 +12,10 @@ export async function GET() {
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
+  if (isPrismaBackendEnabled()) {
+    const created = await createPrismaVisa(body);
+    return NextResponse.json({ ok: true, data: created });
+  }
   const created = await updateStore((data) => {
     const item: VisaRecord = {
       id: crypto.randomUUID(),

@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { readAppData } from "@/lib/app-data";
+import { isPrismaBackendEnabled } from "@/lib/data-backend";
+import { updatePrismaHazard } from "@/lib/prisma-repository";
 import { updateStore } from "@/lib/server-store";
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -13,6 +15,11 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const body = await request.json().catch(() => ({}));
+  if (isPrismaBackendEnabled()) {
+    const updated = await updatePrismaHazard(id, body);
+    if (!updated) return NextResponse.json({ ok: false, error: "Hazard does not exist" }, { status: 404 });
+    return NextResponse.json({ ok: true, data: updated });
+  }
   const updated = await updateStore((data) => {
     const index = data.hazards.findIndex((item) => item.id === id);
     if (index === -1) return null;

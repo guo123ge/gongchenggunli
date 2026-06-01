@@ -404,6 +404,62 @@ export async function getPrismaHazards(): Promise<Hazard[]> {
   }));
 }
 
+export async function createPrismaHazard(body: Record<string, unknown>): Promise<Hazard> {
+  const projectId = String(body.projectId ?? (await getPrismaProjects())[0]?.id ?? "");
+  if (!projectId) throw new Error("Prisma backend has no project seed data. Run npm.cmd run db:seed.");
+  const submittedById = await getDefaultSubmittedById("safe");
+  const created = await prisma.safetyHazard.create({
+    data: {
+      projectId,
+      title: String(body.title ?? "未命名隐患"),
+      area: String(body.area ?? "未指定区域"),
+      riskLevel: String(body.riskLevel ?? "medium"),
+      description: String(body.description ?? body.title ?? "待补充"),
+      rectification: typeof body.rectification === "string" ? body.rectification : undefined,
+      status: String(body.status ?? "open"),
+      dueDate: new Date(String(body.dueDate ?? new Date().toISOString())),
+      submittedById,
+    },
+    include: { submittedBy: true },
+  });
+  return {
+    id: created.id,
+    title: created.title,
+    area: created.area,
+    riskLevel: created.riskLevel as Hazard["riskLevel"],
+    status: created.status as Hazard["status"],
+    owner: created.submittedBy.displayName,
+    dueDate: created.dueDate.toISOString().slice(0, 10),
+  };
+}
+
+export async function updatePrismaHazard(id: string, body: Record<string, unknown>): Promise<Hazard | null> {
+  const exists = await prisma.safetyHazard.findUnique({ where: { id } });
+  if (!exists) return null;
+  const updated = await prisma.safetyHazard.update({
+    where: { id },
+    data: {
+      title: typeof body.title === "string" ? body.title : undefined,
+      area: typeof body.area === "string" ? body.area : undefined,
+      riskLevel: typeof body.riskLevel === "string" ? body.riskLevel : undefined,
+      status: typeof body.status === "string" ? body.status : undefined,
+      description: typeof body.description === "string" ? body.description : undefined,
+      rectification: typeof body.rectification === "string" ? body.rectification : undefined,
+      dueDate: body.dueDate === undefined ? undefined : new Date(String(body.dueDate)),
+    },
+    include: { submittedBy: true },
+  });
+  return {
+    id: updated.id,
+    title: updated.title,
+    area: updated.area,
+    riskLevel: updated.riskLevel as Hazard["riskLevel"],
+    status: updated.status as Hazard["status"],
+    owner: updated.submittedBy.displayName,
+    dueDate: updated.dueDate.toISOString().slice(0, 10),
+  };
+}
+
 export async function getPrismaMachinery(): Promise<Machinery[]> {
   const rows = await prisma.machinery.findMany({
     include: { shiftRecords: true },
@@ -418,6 +474,66 @@ export async function getPrismaMachinery(): Promise<Machinery[]> {
     nextMaintenanceDate: item.nextMaintenanceDate?.toISOString().slice(0, 10) ?? "",
     shiftsThisMonth: item.shiftRecords.length,
   }));
+}
+
+export async function createPrismaMachinery(body: Record<string, unknown>): Promise<Machinery> {
+  const projectId = String(body.projectId ?? (await getPrismaProjects())[0]?.id ?? "");
+  if (!projectId) throw new Error("Prisma backend has no project seed data. Run npm.cmd run db:seed.");
+  const submittedById = await getDefaultSubmittedById("mach");
+  const created = await prisma.machinery.create({
+    data: {
+      projectId,
+      name: String(body.name ?? "未命名机械"),
+      code: String(body.code ?? `MC-${Date.now()}`),
+      model: String(body.model ?? "待补充"),
+      operator: String(body.operator ?? "待分配"),
+      status: String(body.status ?? "onsite"),
+      enteredAt: new Date(String(body.enteredAt ?? new Date().toISOString())),
+      nextMaintenanceDate: body.nextMaintenanceDate === undefined ? undefined : new Date(String(body.nextMaintenanceDate)),
+      submittedById,
+    },
+    include: { shiftRecords: true },
+  });
+  return {
+    id: created.id,
+    name: created.name,
+    code: created.code,
+    operator: created.operator,
+    status: created.status as Machinery["status"],
+    nextMaintenanceDate: created.nextMaintenanceDate?.toISOString().slice(0, 10) ?? "",
+    shiftsThisMonth: created.shiftRecords.length,
+  };
+}
+
+export async function updatePrismaMachinery(id: string, body: Record<string, unknown>): Promise<Machinery | null> {
+  const exists = await prisma.machinery.findUnique({ where: { id } });
+  if (!exists) return null;
+  const updated = await prisma.machinery.update({
+    where: { id },
+    data: {
+      name: typeof body.name === "string" ? body.name : undefined,
+      code: typeof body.code === "string" ? body.code : undefined,
+      model: typeof body.model === "string" ? body.model : undefined,
+      operator: typeof body.operator === "string" ? body.operator : undefined,
+      status: typeof body.status === "string" ? body.status : undefined,
+      nextMaintenanceDate: body.nextMaintenanceDate === undefined ? undefined : new Date(String(body.nextMaintenanceDate)),
+    },
+    include: { shiftRecords: true },
+  });
+  return {
+    id: updated.id,
+    name: updated.name,
+    code: updated.code,
+    operator: updated.operator,
+    status: updated.status as Machinery["status"],
+    nextMaintenanceDate: updated.nextMaintenanceDate?.toISOString().slice(0, 10) ?? "",
+    shiftsThisMonth: updated.shiftRecords.length,
+  };
+}
+
+export async function deletePrismaMachinery(id: string) {
+  const result = await prisma.machinery.deleteMany({ where: { id } });
+  return result.count > 0;
 }
 
 export async function getPrismaArchives(): Promise<ArchiveRecord[]> {
@@ -435,6 +551,66 @@ export async function getPrismaArchives(): Promise<ArchiveRecord[]> {
     submittedBy: item.submittedBy.displayName,
     createdAt: item.createdAt.toLocaleString("zh-CN"),
   }));
+}
+
+export async function createPrismaArchive(body: Record<string, unknown>): Promise<ArchiveRecord> {
+  const projectId = String(body.projectId ?? (await getPrismaProjects())[0]?.id ?? "");
+  if (!projectId) throw new Error("Prisma backend has no project seed data. Run npm.cmd run db:seed.");
+  const submittedById = await getDefaultSubmittedById("doc");
+  const tags = Array.isArray(body.tags) ? body.tags.join(",") : String(body.tags ?? "");
+  const created = await prisma.archive.create({
+    data: {
+      projectId,
+      title: String(body.title ?? "未命名档案"),
+      category: String(body.category ?? "其他"),
+      tags,
+      version: String(body.version ?? "v1.0"),
+      status: String(body.status ?? "submitted"),
+      submittedById,
+    },
+    include: { submittedBy: true },
+  });
+  return {
+    id: created.id,
+    title: created.title,
+    category: created.category,
+    tags: parseCsv(created.tags),
+    version: created.version,
+    status: created.status as ArchiveRecord["status"],
+    submittedBy: created.submittedBy.displayName,
+    createdAt: created.createdAt.toLocaleString("zh-CN"),
+  };
+}
+
+export async function updatePrismaArchive(id: string, body: Record<string, unknown>): Promise<ArchiveRecord | null> {
+  const exists = await prisma.archive.findUnique({ where: { id } });
+  if (!exists) return null;
+  const updated = await prisma.archive.update({
+    where: { id },
+    data: {
+      title: typeof body.title === "string" ? body.title : undefined,
+      category: typeof body.category === "string" ? body.category : undefined,
+      tags: Array.isArray(body.tags) ? body.tags.join(",") : typeof body.tags === "string" ? body.tags : undefined,
+      version: typeof body.version === "string" ? body.version : undefined,
+      status: typeof body.status === "string" ? body.status : undefined,
+    },
+    include: { submittedBy: true },
+  });
+  return {
+    id: updated.id,
+    title: updated.title,
+    category: updated.category,
+    tags: parseCsv(updated.tags),
+    version: updated.version,
+    status: updated.status as ArchiveRecord["status"],
+    submittedBy: updated.submittedBy.displayName,
+    createdAt: updated.createdAt.toLocaleString("zh-CN"),
+  };
+}
+
+export async function deletePrismaArchive(id: string) {
+  const result = await prisma.archive.deleteMany({ where: { id } });
+  return result.count > 0;
 }
 
 export async function getPrismaArchiveFiles(): Promise<ArchiveFile[]> {
@@ -455,6 +631,35 @@ export async function getPrismaArchiveFiles(): Promise<ArchiveFile[]> {
   }));
 }
 
+export async function getPrismaArchiveFilesByArchiveId(archiveId: string): Promise<ArchiveFile[]> {
+  const all = await getPrismaArchiveFiles();
+  return all.filter((item) => item.archiveId === archiveId);
+}
+
+export async function createPrismaArchiveFile(archiveId: string, body: Record<string, unknown>): Promise<ArchiveFile> {
+  const created = await prisma.attachment.create({
+    data: {
+      archiveId,
+      fileName: String(body.fileName ?? "未命名文件"),
+      filePath: String(body.filePath ?? ""),
+      fileType: String(body.fileType ?? "application/octet-stream"),
+      fileSize: Number(body.fileSize ?? 0),
+      url: String(body.url ?? ""),
+    },
+  });
+  return {
+    id: created.id,
+    archiveId: created.archiveId ?? archiveId,
+    fileName: created.fileName,
+    filePath: created.filePath,
+    fileType: created.fileType,
+    fileSize: created.fileSize,
+    version: String(body.version ?? "v1.0"),
+    url: created.url,
+    uploadedAt: created.createdAt.toLocaleString("zh-CN"),
+  };
+}
+
 export async function getPrismaChanges(): Promise<ChangeRecord[]> {
   const rows = await prisma.designChange.findMany({
     include: { submittedBy: true },
@@ -472,6 +677,68 @@ export async function getPrismaChanges(): Promise<ChangeRecord[]> {
   }));
 }
 
+export async function createPrismaChange(body: Record<string, unknown>): Promise<ChangeRecord> {
+  const projectId = String(body.projectId ?? (await getPrismaProjects())[0]?.id ?? "");
+  if (!projectId) throw new Error("Prisma backend has no project seed data. Run npm.cmd run db:seed.");
+  const submittedById = await getDefaultSubmittedById("tech");
+  const created = await prisma.designChange.create({
+    data: {
+      projectId,
+      changeNo: String(body.changeNo ?? `BG-${Date.now()}`),
+      title: String(body.title ?? "未命名变更"),
+      reason: String(body.reason ?? "待补充"),
+      content: String(body.content ?? ""),
+      impact: String(body.impact ?? "待评估"),
+      estimatedCost: Number(body.estimatedCost ?? body.amount ?? 0),
+      status: String(body.status ?? "submitted"),
+      submittedById,
+    },
+    include: { submittedBy: true },
+  });
+  return {
+    id: created.id,
+    title: created.title,
+    reason: created.reason,
+    content: created.content,
+    estimatedCost: created.estimatedCost,
+    status: created.status as ChangeRecord["status"],
+    submittedBy: created.submittedBy.displayName,
+    createdAt: created.createdAt.toLocaleString("zh-CN"),
+  };
+}
+
+export async function updatePrismaChange(id: string, body: Record<string, unknown>): Promise<ChangeRecord | null> {
+  const exists = await prisma.designChange.findUnique({ where: { id } });
+  if (!exists) return null;
+  const updated = await prisma.designChange.update({
+    where: { id },
+    data: {
+      title: typeof body.title === "string" ? body.title : undefined,
+      reason: typeof body.reason === "string" ? body.reason : undefined,
+      content: typeof body.content === "string" ? body.content : undefined,
+      impact: typeof body.impact === "string" ? body.impact : undefined,
+      estimatedCost: body.estimatedCost === undefined && body.amount === undefined ? undefined : Number(body.estimatedCost ?? body.amount),
+      status: typeof body.status === "string" ? body.status : undefined,
+    },
+    include: { submittedBy: true },
+  });
+  return {
+    id: updated.id,
+    title: updated.title,
+    reason: updated.reason,
+    content: updated.content,
+    estimatedCost: updated.estimatedCost,
+    status: updated.status as ChangeRecord["status"],
+    submittedBy: updated.submittedBy.displayName,
+    createdAt: updated.createdAt.toLocaleString("zh-CN"),
+  };
+}
+
+export async function deletePrismaChange(id: string) {
+  const result = await prisma.designChange.deleteMany({ where: { id } });
+  return result.count > 0;
+}
+
 export async function getPrismaVisas(): Promise<VisaRecord[]> {
   const rows = await prisma.engineeringVisa.findMany({
     include: { submittedBy: true },
@@ -486,6 +753,70 @@ export async function getPrismaVisas(): Promise<VisaRecord[]> {
     submittedBy: item.submittedBy.displayName,
     createdAt: item.createdAt.toLocaleString("zh-CN"),
   }));
+}
+
+export async function createPrismaVisa(body: Record<string, unknown>): Promise<VisaRecord> {
+  const projectId = String(body.projectId ?? (await getPrismaProjects())[0]?.id ?? "");
+  if (!projectId) throw new Error("Prisma backend has no project seed data. Run npm.cmd run db:seed.");
+  const submittedById = await getDefaultSubmittedById("tech");
+  const created = await prisma.engineeringVisa.create({
+    data: {
+      projectId,
+      visaNo: String(body.visaNo ?? `QZ-${Date.now()}`),
+      title: String(body.title ?? "未命名签证"),
+      visaType: String(body.visaType ?? "standard"),
+      visaReason: String(body.visaReason ?? body.reason ?? "待补充"),
+      visaContent: String(body.visaContent ?? body.content ?? ""),
+      constructionPosition: String(body.constructionPosition ?? "未指定"),
+      quantities: Array.isArray(body.quantities) ? JSON.stringify(body.quantities) : String(body.quantities ?? "[]"),
+      totalAmount: Number(body.totalAmount ?? body.amount ?? 0),
+      status: String(body.status ?? "submitted"),
+      submittedById,
+    },
+    include: { submittedBy: true },
+  });
+  return {
+    id: created.id,
+    title: created.title,
+    visaType: created.visaType,
+    totalAmount: created.totalAmount,
+    status: created.status as VisaRecord["status"],
+    submittedBy: created.submittedBy.displayName,
+    createdAt: created.createdAt.toLocaleString("zh-CN"),
+  };
+}
+
+export async function updatePrismaVisa(id: string, body: Record<string, unknown>): Promise<VisaRecord | null> {
+  const exists = await prisma.engineeringVisa.findUnique({ where: { id } });
+  if (!exists) return null;
+  const updated = await prisma.engineeringVisa.update({
+    where: { id },
+    data: {
+      title: typeof body.title === "string" ? body.title : undefined,
+      visaType: typeof body.visaType === "string" ? body.visaType : undefined,
+      visaReason: typeof body.visaReason === "string" ? body.visaReason : undefined,
+      visaContent: typeof body.visaContent === "string" ? body.visaContent : undefined,
+      constructionPosition: typeof body.constructionPosition === "string" ? body.constructionPosition : undefined,
+      quantities: Array.isArray(body.quantities) ? JSON.stringify(body.quantities) : typeof body.quantities === "string" ? body.quantities : undefined,
+      totalAmount: body.totalAmount === undefined && body.amount === undefined ? undefined : Number(body.totalAmount ?? body.amount),
+      status: typeof body.status === "string" ? body.status : undefined,
+    },
+    include: { submittedBy: true },
+  });
+  return {
+    id: updated.id,
+    title: updated.title,
+    visaType: updated.visaType,
+    totalAmount: updated.totalAmount,
+    status: updated.status as VisaRecord["status"],
+    submittedBy: updated.submittedBy.displayName,
+    createdAt: updated.createdAt.toLocaleString("zh-CN"),
+  };
+}
+
+export async function deletePrismaVisa(id: string) {
+  const result = await prisma.engineeringVisa.deleteMany({ where: { id } });
+  return result.count > 0;
 }
 
 export async function getPrismaReviewItems(): Promise<ReviewItem[]> {

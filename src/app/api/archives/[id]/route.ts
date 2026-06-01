@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { readAppData } from "@/lib/app-data";
+import { isPrismaBackendEnabled } from "@/lib/data-backend";
+import { deletePrismaArchive, updatePrismaArchive } from "@/lib/prisma-repository";
 import { updateStore } from "@/lib/server-store";
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -13,6 +15,11 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const body = await request.json().catch(() => ({}));
+  if (isPrismaBackendEnabled()) {
+    const updated = await updatePrismaArchive(id, body);
+    if (!updated) return NextResponse.json({ ok: false, error: "Archive does not exist" }, { status: 404 });
+    return NextResponse.json({ ok: true, data: updated });
+  }
   const updated = await updateStore((data) => {
     const index = data.archives.findIndex((item) => item.id === id);
     if (index === -1) return null;
@@ -25,6 +32,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  if (isPrismaBackendEnabled()) {
+    await deletePrismaArchive(id);
+    return NextResponse.json({ ok: true, data: { id, deleted: true } });
+  }
   await updateStore((data) => {
     data.archives = data.archives.filter((item) => item.id !== id);
     data.archiveFiles = data.archiveFiles.filter((item) => item.archiveId !== id);
