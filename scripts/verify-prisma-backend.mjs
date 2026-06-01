@@ -50,6 +50,33 @@ try {
       2,
     ),
   );
+} catch (error) {
+  const message = error instanceof Error ? error.message : String(error);
+  const code = typeof error === "object" && error !== null && "code" in error ? error.code : undefined;
+  const isConnectionError = code === "P1001" || message.includes("Can't reach database server");
+
+  if (isConnectionError) {
+    console.error(
+      JSON.stringify(
+        {
+          ok: false,
+          code: "POSTGRES_UNAVAILABLE",
+          message: "PostgreSQL is not reachable at the configured DATABASE_URL.",
+          databaseUrl: process.env.DATABASE_URL,
+          nextSteps: [
+            "Start PostgreSQL, for example: docker compose up -d postgres",
+            "Run: npm.cmd run db:prepare",
+            "Then switch .env.local to DATA_BACKEND=\"prisma\" when you want the app to use PostgreSQL.",
+          ],
+        },
+        null,
+        2,
+      ),
+    );
+    process.exitCode = 1;
+  } else {
+    throw error;
+  }
 } finally {
   await prisma.$disconnect();
 }

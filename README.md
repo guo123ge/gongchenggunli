@@ -51,8 +51,7 @@ npm.cmd run build
 
 ```bash
 docker compose up -d postgres
-npm.cmd run prisma:migrate -- --name init
-npm.cmd run db:seed
+npm.cmd run db:prepare
 ```
 
 然后把 `.env.local` 改为：
@@ -67,4 +66,6 @@ DATA_BACKEND="prisma"
 npm.cmd run verify:prisma
 ```
 
-如果本机没有 PostgreSQL 或 Docker，会看到 `Can't reach database server at localhost:5432`。这表示代码已进入 Prisma 连接阶段，但数据库服务尚未启动。
+`db:prepare` 会依次执行 Prisma generate、migrate deploy、seed 和 `verify:prisma`。
+如果本机没有 PostgreSQL 或 Docker，会看到 `POSTGRES_UNAVAILABLE`。这表示代码已进入 Prisma 连接阶段，但数据库服务尚未启动。
+详细步骤见 `docs/prisma-postgres-runbook.md`。
