@@ -21,6 +21,7 @@ import type {
   Machinery,
   MaintenanceRecord,
   Material,
+  RegistrationRequest,
   ReviewItem,
   SafetyIncident,
   ShiftRecord,
@@ -30,6 +31,7 @@ import type {
 
 export type StoreData = {
   project: typeof project;
+  registrationRequests: RegistrationRequest[];
   dailyLogs: DailyLog[];
   materials: Material[];
   stockIns: StockRecord[];
@@ -53,6 +55,7 @@ let storeUpdateQueue: Promise<unknown> = Promise.resolve();
 
 const initialData: StoreData = {
   project,
+  registrationRequests: [],
   dailyLogs,
   materials,
   stockIns,
@@ -176,6 +179,7 @@ async function readStoreFile(): Promise<StoreData> {
   data.incidents ??= initialData.incidents;
   data.maintenanceRecords ??= initialData.maintenanceRecords;
   data.shiftRecords ??= initialData.shiftRecords;
+  data.registrationRequests ??= initialData.registrationRequests;
   return data;
 }
 

@@ -9,6 +9,15 @@ export type User = {
   role: ProjectRole;
 };
 
+export type RegistrationRequest = {
+  id: string;
+  username: string;
+  displayName: string;
+  phone: string;
+  status: "pending" | "approved" | "rejected";
+  createdAt: string;
+};
+
 export type Project = {
   id: string;
   name: string;

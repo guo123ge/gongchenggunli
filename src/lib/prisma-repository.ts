@@ -1138,6 +1138,7 @@ export async function readPrismaStore(): Promise<StoreData> {
     stockIns,
     stockOuts,
     hazards,
+    registrationRequests: [],
     incidents,
     machinery,
     maintenanceRecords,
