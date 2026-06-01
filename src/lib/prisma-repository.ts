@@ -13,6 +13,11 @@ import type {
   StockRecord,
   VisaRecord,
 } from "@/types";
+import type { dailyLogSchema, materialSchema } from "@/lib/validators";
+import type { z } from "zod";
+
+type DailyLogInput = z.infer<typeof dailyLogSchema>;
+type MaterialInput = z.infer<typeof materialSchema>;
 
 function parseJson<T>(value: string, fallback: T): T {
   try {
@@ -45,6 +50,14 @@ export async function getPrismaProjects(): Promise<Project[]> {
   }));
 }
 
+async function getDefaultSubmittedById(username = "pm") {
+  const user = await prisma.user.findUnique({ where: { username } });
+  if (user) return user.id;
+  const fallback = await prisma.user.findFirst({ orderBy: { createdAt: "asc" } });
+  if (!fallback) throw new Error("Prisma backend has no user seed data. Run npm.cmd run db:seed.");
+  return fallback.id;
+}
+
 export async function getPrismaMaterials(): Promise<Material[]> {
   const rows = await prisma.material.findMany({
     include: {
@@ -65,6 +78,73 @@ export async function getPrismaMaterials(): Promise<Material[]> {
     monthlyIn: item.stockIns.reduce((sum, record) => sum + record.quantity, 0),
     monthlyOut: item.stockOuts.reduce((sum, record) => sum + record.quantity, 0),
   }));
+}
+
+export async function createPrismaMaterial(input: MaterialInput): Promise<Material> {
+  const created = await prisma.material.create({
+    data: {
+      projectId: input.projectId,
+      name: input.name,
+      category: input.category,
+      spec: input.spec,
+      unit: input.unit,
+      safetyStock: input.safetyStock,
+      currentStock: 0,
+    },
+    include: { stockIns: true, stockOuts: true },
+  });
+  return {
+    id: created.id,
+    projectId: created.projectId,
+    name: created.name,
+    category: created.category,
+    spec: created.spec,
+    unit: created.unit,
+    safetyStock: created.safetyStock,
+    currentStock: created.currentStock,
+    monthlyIn: 0,
+    monthlyOut: 0,
+  };
+}
+
+export async function updatePrismaMaterial(id: string, body: Record<string, unknown>): Promise<Material | null> {
+  const exists = await prisma.material.findUnique({ where: { id } });
+  if (!exists) return null;
+  const updated = await prisma.material.update({
+    where: { id },
+    data: {
+      name: typeof body.name === "string" ? body.name : undefined,
+      category: typeof body.category === "string" ? body.category : undefined,
+      spec: typeof body.spec === "string" ? body.spec : undefined,
+      unit: typeof body.unit === "string" ? body.unit : undefined,
+      safetyStock: body.safetyStock === undefined ? undefined : Number(body.safetyStock),
+      currentStock: body.currentStock === undefined ? undefined : Number(body.currentStock),
+    },
+    include: { stockIns: { where: { status: "approved" } }, stockOuts: { where: { status: "approved" } } },
+  });
+  return {
+    id: updated.id,
+    projectId: updated.projectId,
+    name: updated.name,
+    category: updated.category,
+    spec: updated.spec,
+    unit: updated.unit,
+    safetyStock: updated.safetyStock,
+    currentStock: updated.currentStock,
+    monthlyIn: updated.stockIns.reduce((sum, record) => sum + record.quantity, 0),
+    monthlyOut: updated.stockOuts.reduce((sum, record) => sum + record.quantity, 0),
+  };
+}
+
+export async function deletePrismaMaterial(id: string) {
+  const exists = await prisma.material.findUnique({ where: { id } });
+  if (!exists) return false;
+  await prisma.$transaction([
+    prisma.stockIn.deleteMany({ where: { materialId: id } }),
+    prisma.stockOut.deleteMany({ where: { materialId: id } }),
+    prisma.material.delete({ where: { id } }),
+  ]);
+  return true;
 }
 
 export async function getPrismaDailyLogs(): Promise<DailyLog[]> {
@@ -102,6 +182,115 @@ export async function getPrismaDailyLogs(): Promise<DailyLog[]> {
   }));
 }
 
+export async function createPrismaDailyLog(input: DailyLogInput): Promise<DailyLog> {
+  const submittedById = await getDefaultSubmittedById("con");
+  const created = await prisma.dailyLog.create({
+    data: {
+      projectId: input.projectId,
+      workDate: input.workDate,
+      weather: input.weather,
+      tempLow: input.tempLow,
+      tempHigh: input.tempHigh,
+      workContent: input.workContent,
+      workPosition: input.workPosition,
+      workProcess: input.workProcess,
+      laborCount: input.laborCount,
+      laborDetail: JSON.stringify(input.laborDetail),
+      machineryUsed: JSON.stringify(input.machineryUsed),
+      materialUsed: JSON.stringify(input.materialUsed),
+      qualityCheck: input.qualityCheck,
+      safetyCheck: input.safetyCheck,
+      status: input.status,
+      submittedById,
+    },
+    include: { submittedBy: true, reviewedBy: true, attachments: true },
+  });
+  return {
+    id: created.id,
+    projectId: created.projectId,
+    workDate: created.workDate.toISOString().slice(0, 10),
+    weather: created.weather as DailyLog["weather"],
+    tempLow: created.tempLow,
+    tempHigh: created.tempHigh,
+    workContent: created.workContent,
+    workPosition: created.workPosition,
+    workProcess: created.workProcess,
+    laborCount: created.laborCount,
+    laborDetail: parseJson(created.laborDetail, []),
+    machineryUsed: parseJson(created.machineryUsed, []),
+    materialUsed: parseJson(created.materialUsed, []),
+    qualityCheck: created.qualityCheck ?? undefined,
+    safetyCheck: created.safetyCheck ?? undefined,
+    status: created.status as DailyLog["status"],
+    submittedBy: created.submittedBy.displayName,
+    reviewedBy: created.reviewedBy?.displayName,
+    reviewComment: created.reviewComment ?? undefined,
+    attachments: [],
+  };
+}
+
+export async function updatePrismaDailyLog(id: string, body: Record<string, unknown>): Promise<DailyLog | null> {
+  const existing = await prisma.dailyLog.findUnique({ where: { id } });
+  if (!existing) return null;
+  if (existing.status === "approved") {
+    const [item] = (await getPrismaDailyLogs()).filter((log) => log.id === id);
+    return item ?? null;
+  }
+  const updated = await prisma.dailyLog.update({
+    where: { id },
+    data: {
+      workDate: body.workDate === undefined ? undefined : new Date(String(body.workDate)),
+      weather: typeof body.weather === "string" ? body.weather : undefined,
+      tempLow: body.tempLow === undefined ? undefined : Number(body.tempLow),
+      tempHigh: body.tempHigh === undefined ? undefined : Number(body.tempHigh),
+      workContent: typeof body.workContent === "string" ? body.workContent : undefined,
+      workPosition: typeof body.workPosition === "string" ? body.workPosition : undefined,
+      workProcess: typeof body.workProcess === "string" ? body.workProcess : undefined,
+      laborCount: body.laborCount === undefined ? undefined : Number(body.laborCount),
+      laborDetail: Array.isArray(body.laborDetail) ? JSON.stringify(body.laborDetail) : undefined,
+      machineryUsed: Array.isArray(body.machineryUsed) ? JSON.stringify(body.machineryUsed) : undefined,
+      materialUsed: Array.isArray(body.materialUsed) ? JSON.stringify(body.materialUsed) : undefined,
+      qualityCheck: typeof body.qualityCheck === "string" ? body.qualityCheck : undefined,
+      safetyCheck: typeof body.safetyCheck === "string" ? body.safetyCheck : undefined,
+      status: typeof body.status === "string" ? body.status : undefined,
+    },
+    include: { submittedBy: true, reviewedBy: true, attachments: true },
+  });
+  return {
+    id: updated.id,
+    projectId: updated.projectId,
+    workDate: updated.workDate.toISOString().slice(0, 10),
+    weather: updated.weather as DailyLog["weather"],
+    tempLow: updated.tempLow,
+    tempHigh: updated.tempHigh,
+    workContent: updated.workContent,
+    workPosition: updated.workPosition,
+    workProcess: updated.workProcess,
+    laborCount: updated.laborCount,
+    laborDetail: parseJson(updated.laborDetail, []),
+    machineryUsed: parseJson(updated.machineryUsed, []),
+    materialUsed: parseJson(updated.materialUsed, []),
+    qualityCheck: updated.qualityCheck ?? undefined,
+    safetyCheck: updated.safetyCheck ?? undefined,
+    status: updated.status as DailyLog["status"],
+    submittedBy: updated.submittedBy.displayName,
+    reviewedBy: updated.reviewedBy?.displayName,
+    reviewComment: updated.reviewComment ?? undefined,
+    attachments: updated.attachments.map((attachment) => ({
+      id: attachment.id,
+      fileName: attachment.fileName,
+      url: attachment.url,
+      fileType: attachment.fileType,
+      hasWatermark: attachment.hasWatermark,
+    })),
+  };
+}
+
+export async function deletePrismaDraftDailyLog(id: string) {
+  const result = await prisma.dailyLog.deleteMany({ where: { id, status: "draft" } });
+  return result.count > 0;
+}
+
 export async function getPrismaStockIns(): Promise<StockRecord[]> {
   const rows = await prisma.stockIn.findMany({
     include: { material: true, submittedBy: true },
@@ -120,6 +309,35 @@ export async function getPrismaStockIns(): Promise<StockRecord[]> {
   }));
 }
 
+export async function createPrismaStockIn(body: Record<string, unknown>): Promise<StockRecord> {
+  const materialId = String(body.materialId ?? "");
+  const material = await prisma.material.findUniqueOrThrow({ where: { id: materialId } });
+  const submittedById = await getDefaultSubmittedById("mat");
+  const created = await prisma.stockIn.create({
+    data: {
+      projectId: material.projectId,
+      materialId,
+      billNo: String(body.billNo ?? `RK-${Date.now()}`),
+      supplier: String(body.supplier ?? "待补充"),
+      quantity: Number(body.quantity ?? 0),
+      status: "submitted",
+      submittedById,
+    },
+    include: { material: true, submittedBy: true },
+  });
+  return {
+    id: created.id,
+    materialId: created.materialId,
+    materialName: created.material.name,
+    billNo: created.billNo,
+    quantity: created.quantity,
+    status: created.status as StockRecord["status"],
+    submittedBy: created.submittedBy.displayName,
+    createdAt: created.createdAt.toLocaleString("zh-CN"),
+    supplier: created.supplier,
+  };
+}
+
 export async function getPrismaStockOuts(): Promise<StockRecord[]> {
   const rows = await prisma.stockOut.findMany({
     include: { material: true, submittedBy: true },
@@ -136,6 +354,38 @@ export async function getPrismaStockOuts(): Promise<StockRecord[]> {
     createdAt: item.createdAt.toLocaleString("zh-CN"),
     receiver: item.receiver,
   }));
+}
+
+export async function createPrismaStockOut(body: Record<string, unknown>): Promise<StockRecord> {
+  const materialId = String(body.materialId ?? "");
+  const material = await prisma.material.findUniqueOrThrow({ where: { id: materialId } });
+  const quantity = Number(body.quantity ?? 0);
+  if (quantity > material.currentStock) throw new Error("库存不足，无法提交出库");
+  const submittedById = await getDefaultSubmittedById("mat");
+  const created = await prisma.stockOut.create({
+    data: {
+      projectId: material.projectId,
+      materialId,
+      billNo: String(body.billNo ?? `CK-${Date.now()}`),
+      receiver: String(body.receiver ?? "待补充"),
+      usagePosition: String(body.usagePosition ?? "未指定"),
+      quantity,
+      status: "submitted",
+      submittedById,
+    },
+    include: { material: true, submittedBy: true },
+  });
+  return {
+    id: created.id,
+    materialId: created.materialId,
+    materialName: created.material.name,
+    billNo: created.billNo,
+    quantity: created.quantity,
+    status: created.status as StockRecord["status"],
+    submittedBy: created.submittedBy.displayName,
+    createdAt: created.createdAt.toLocaleString("zh-CN"),
+    receiver: created.receiver,
+  };
 }
 
 export async function getPrismaHazards(): Promise<Hazard[]> {

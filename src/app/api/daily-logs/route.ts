@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { isPrismaBackendEnabled } from "@/lib/data-backend";
-import { getPrismaDailyLogs } from "@/lib/prisma-repository";
+import { createPrismaDailyLog, getPrismaDailyLogs } from "@/lib/prisma-repository";
 import { addReviewItem, readStore, updateStore } from "@/lib/server-store";
 import { dailyLogSchema } from "@/lib/validators";
 
@@ -22,6 +22,10 @@ export async function POST(request: Request) {
   const parsed = dailyLogSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ ok: false, error: "施工日志校验失败", details: parsed.error.flatten() }, { status: 422 });
+  }
+  if (isPrismaBackendEnabled()) {
+    const created = await createPrismaDailyLog(parsed.data);
+    return NextResponse.json({ ok: true, data: created });
   }
   const created = await updateStore((data) => {
     const item = {

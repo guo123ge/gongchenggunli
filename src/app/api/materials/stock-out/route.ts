@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { isPrismaBackendEnabled } from "@/lib/data-backend";
-import { getPrismaStockOuts } from "@/lib/prisma-repository";
+import { createPrismaStockOut, getPrismaStockOuts } from "@/lib/prisma-repository";
 import { addReviewItem, readStore, updateStore } from "@/lib/server-store";
 
 export async function GET() {
@@ -11,6 +11,14 @@ export async function GET() {
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
+  if (isPrismaBackendEnabled()) {
+    try {
+      const created = await createPrismaStockOut(body);
+      return NextResponse.json({ ok: true, data: created });
+    } catch (error) {
+      return NextResponse.json({ ok: false, error: error instanceof Error ? error.message : "出库提交失败" }, { status: 409 });
+    }
+  }
   const data = await readStore();
   const material = data.materials.find((item) => item.id === body.materialId);
   if (material && Number(body.quantity ?? 0) > material.currentStock) {

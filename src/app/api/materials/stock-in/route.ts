@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { isPrismaBackendEnabled } from "@/lib/data-backend";
-import { getPrismaStockIns } from "@/lib/prisma-repository";
+import { createPrismaStockIn, getPrismaStockIns } from "@/lib/prisma-repository";
 import { addReviewItem, readStore, updateStore } from "@/lib/server-store";
 
 export async function GET() {
@@ -11,6 +11,10 @@ export async function GET() {
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
+  if (isPrismaBackendEnabled()) {
+    const created = await createPrismaStockIn(body);
+    return NextResponse.json({ ok: true, data: created });
+  }
   const created = await updateStore((data) => {
     const material = data.materials.find((item) => item.id === body.materialId);
     const item = {
