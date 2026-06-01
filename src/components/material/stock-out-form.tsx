@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,43 +8,53 @@ import { Input, Label } from "@/components/ui/input";
 import { MaterialSelector } from "@/components/material/material-selector";
 
 export function StockOutForm() {
+  const [materialId, setMaterialId] = useState("");
+
   async function submit() {
+    if (!materialId) {
+      toast.error("Please select a material first.");
+      return;
+    }
+
     const response = await fetch("/api/materials/stock-out", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ materialId: "mat-003", quantity: 420, billNo: "CK-NEW" }),
+      body: JSON.stringify({ materialId, quantity: 420, billNo: "CK-NEW" }),
     });
     const body = await response.json();
-    if (body.ok) toast.success("出库单已提交审核");
+    if (body.ok) {
+      toast.success("Stock-out record submitted for review.");
+    } else {
+      toast.error(body.error ?? "Stock-out submission failed.");
+    }
   }
 
   return (
     <Card>
       <CardHeader>
         <div>
-          <CardTitle>材料出库</CardTitle>
-          <CardDescription>选择材料时展示当前库存，提交前进行库存校验。</CardDescription>
+          <CardTitle>Material stock-out</CardTitle>
+          <CardDescription>Select material, check current stock, and submit a stock-out record.</CardDescription>
         </div>
       </CardHeader>
       <div className="grid gap-4 md:grid-cols-2">
-        <MaterialSelector />
+        <MaterialSelector onSelect={setMaterialId} />
         <div>
-          <Label>出库数量</Label>
+          <Label>Stock-out quantity</Label>
           <Input type="number" defaultValue="420" />
         </div>
         <div>
-          <Label>领用班组</Label>
-          <Input defaultValue="防水班组" />
+          <Label>Receiving team</Label>
+          <Input defaultValue="Waterproofing team" />
         </div>
         <div>
-          <Label>使用部位</Label>
-          <Input defaultValue="地下室外墙" />
+          <Label>Usage area</Label>
+          <Input defaultValue="Basement exterior wall" />
         </div>
       </div>
       <div className="mt-6 flex justify-end">
-        <Button onClick={submit}>提交审核</Button>
+        <Button onClick={submit} disabled={!materialId}>Submit for review</Button>
       </div>
     </Card>
   );
 }
-

@@ -1,12 +1,15 @@
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { RectificationFlow } from "@/components/safety/rectification-flow";
 import { RiskBadge } from "@/components/shared/risk-badge";
-import { hazards } from "@/lib/mock-data";
+import { readStore } from "@/lib/server-store";
 import { notFound } from "next/navigation";
+
+export const dynamic = "force-dynamic";
 
 export default async function HazardDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const hazard = hazards.find((item) => item.id === id);
+  const data = await readStore();
+  const hazard = data.hazards.find((item) => item.id === id);
   if (!hazard) notFound();
 
   return (
@@ -28,4 +31,3 @@ export default async function HazardDetailPage({ params }: { params: Promise<{ i
     </div>
   );
 }
-

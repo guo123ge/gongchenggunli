@@ -5,9 +5,13 @@ import { RiskBadge } from "@/components/shared/risk-badge";
 import { RectificationFlow } from "@/components/safety/rectification-flow";
 import { Checklist } from "@/components/safety/checklist";
 import { Heatmap } from "@/components/safety/heatmap";
-import { hazards } from "@/lib/mock-data";
+import { readStore } from "@/lib/server-store";
 
-export default function SafetyPage() {
+export const dynamic = "force-dynamic";
+
+export default async function SafetyPage() {
+  const data = await readStore();
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
@@ -22,7 +26,7 @@ export default function SafetyPage() {
         <Card>
           <CardHeader><div><CardTitle>隐患列表</CardTitle><CardDescription>按红/橙/黄风险标识展示</CardDescription></div></CardHeader>
           <div className="space-y-3">
-            {hazards.map((item) => (
+            {data.hazards.map((item) => (
               <div key={item.id} className="flex items-center justify-between rounded-2xl border border-border bg-panel/60 p-4">
                 <div>
                   <p className="font-semibold text-white">{item.title}</p>
@@ -49,4 +53,3 @@ export default function SafetyPage() {
     </div>
   );
 }
-

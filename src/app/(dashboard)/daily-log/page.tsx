@@ -2,9 +2,12 @@ import Link from "next/link";
 import { LogCard } from "@/components/daily-log/log-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { dailyLogs } from "@/lib/mock-data";
+import { readStore } from "@/lib/server-store";
 
-export default function DailyLogPage() {
+export const dynamic = "force-dynamic";
+
+export default async function DailyLogPage() {
+  const data = await readStore();
   return (
     <div className="space-y-6">
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
@@ -26,11 +29,10 @@ export default function DailyLogPage() {
       </div>
 
       <div className="grid gap-4 xl:grid-cols-2">
-        {dailyLogs.map((log) => (
+        {data.dailyLogs.map((log) => (
           <LogCard key={log.id} log={log} />
         ))}
       </div>
     </div>
   );
 }
-

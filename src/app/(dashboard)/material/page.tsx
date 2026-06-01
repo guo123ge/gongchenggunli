@@ -2,9 +2,12 @@ import Link from "next/link";
 import { InventoryBoard } from "@/components/material/inventory-board";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { materials } from "@/lib/mock-data";
+import { readStore } from "@/lib/server-store";
 
-export default function MaterialPage() {
+export const dynamic = "force-dynamic";
+
+export default async function MaterialPage() {
+  const data = await readStore();
   return (
     <div className="space-y-6">
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
@@ -21,8 +24,7 @@ export default function MaterialPage() {
       <div className="rounded-3xl border border-border bg-panel/70 p-4">
         <Input placeholder="搜索材料名称、规格、供应商..." />
       </div>
-      <InventoryBoard materials={materials} />
+      <InventoryBoard materials={data.materials} />
     </div>
   );
 }
-

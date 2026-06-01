@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { MaterialLedger } from "@/components/material/material-ledger";
 import { Button } from "@/components/ui/button";
-import { stockOuts } from "@/lib/mock-data";
+import { readStore } from "@/lib/server-store";
 
-export default function StockOutPage() {
+export const dynamic = "force-dynamic";
+
+export default async function StockOutPage() {
+  const data = await readStore();
   return (
     <div className="space-y-6">
       <div className="flex items-end justify-between">
@@ -13,8 +16,7 @@ export default function StockOutPage() {
         </div>
         <Link href="/material/stock-out/new"><Button>新建出库</Button></Link>
       </div>
-      <MaterialLedger records={stockOuts} />
+      <MaterialLedger records={data.stockOuts} />
     </div>
   );
 }
-

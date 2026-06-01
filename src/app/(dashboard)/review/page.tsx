@@ -2,9 +2,12 @@ import { ReviewFlow } from "@/components/shared/review-flow";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MODULE_LABELS } from "@/lib/constants";
-import { reviewItems } from "@/lib/mock-data";
+import { readStore } from "@/lib/server-store";
 
-export default function ReviewPage() {
+export const dynamic = "force-dynamic";
+
+export default async function ReviewPage() {
+  const data = await readStore();
   return (
     <div className="space-y-6">
       <div>
@@ -15,7 +18,7 @@ export default function ReviewPage() {
       <Card>
         <CardHeader><div><CardTitle>待审记录</CardTitle><CardDescription>按模块聚合，支持通过、驳回、退回修改。</CardDescription></div></CardHeader>
         <div className="space-y-3">
-          {reviewItems.map((item) => (
+          {data.reviewItems.map((item) => (
             <div key={`${item.targetType}-${item.id}`} className="grid gap-3 rounded-2xl border border-border bg-panel/60 p-4 lg:grid-cols-[1fr_auto_auto] lg:items-center">
               <div>
                 <p className="font-semibold text-white">{item.title}</p>
@@ -30,4 +33,3 @@ export default function ReviewPage() {
     </div>
   );
 }
-

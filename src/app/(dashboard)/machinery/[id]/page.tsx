@@ -1,12 +1,15 @@
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MaintenanceForm } from "@/components/machinery/maintenance-form";
 import { ShiftForm } from "@/components/machinery/shift-form";
-import { machinery } from "@/lib/mock-data";
+import { readStore } from "@/lib/server-store";
 import { notFound } from "next/navigation";
+
+export const dynamic = "force-dynamic";
 
 export default async function MachineryDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const item = machinery.find((machine) => machine.id === id);
+  const data = await readStore();
+  const item = data.machinery.find((machine) => machine.id === id);
   if (!item) notFound();
 
   return (
@@ -27,4 +30,3 @@ export default async function MachineryDetailPage({ params }: { params: Promise<
     </div>
   );
 }
-
