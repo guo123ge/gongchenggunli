@@ -93,6 +93,23 @@ const machine = await requestJson("/api/machinery", {
   }),
 });
 
+const maintenance = await requestJson(`/api/machinery/${machine.id}/maintenance`, {
+  method: "POST",
+  body: JSON.stringify({
+    content: `${marker}_MAINTENANCE`,
+    cost: 321,
+  }),
+});
+
+const shift = await requestJson(`/api/machinery/${machine.id}/shifts`, {
+  method: "POST",
+  body: JSON.stringify({
+    workDate: "2026-06-01",
+    shiftHours: 6,
+    workContent: `${marker}_SHIFT`,
+  }),
+});
+
 const archive = await requestJson("/api/archives", {
   method: "POST",
   body: JSON.stringify({
@@ -131,6 +148,8 @@ const checks = [
   [`/safety/hazards/${hazard.id}`, hazard.title],
   ["/machinery", machine.name],
   [`/machinery/${machine.id}`, machine.name],
+  [`/machinery/${machine.id}`, maintenance.content],
+  [`/machinery/${machine.id}`, shift.workContent],
   ["/archive", archive.title],
   ["/change-visa", change.title],
   ["/change-visa", visa.title],
@@ -150,6 +169,8 @@ console.log(
       stockInId: stockIn.id,
       hazardId: hazard.id,
       machineId: machine.id,
+      maintenanceId: maintenance.id,
+      shiftId: shift.id,
       archiveId: archive.id,
       changeId: change.id,
       visaId: visa.id,
