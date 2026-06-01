@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import {
   dailyLogs,
@@ -42,6 +42,8 @@ type StoreData = {
 
 const dataDir = path.join(process.cwd(), ".local-data");
 const dataFile = path.join(dataDir, "store.json");
+const lockDir = path.join(dataDir, "store.lock");
+let storeUpdateQueue: Promise<unknown> = Promise.resolve();
 
 const initialData: StoreData = {
   project,
@@ -112,17 +114,21 @@ const initialData: StoreData = {
   ],
 };
 
-async function ensureStore() {
+async function ensureStoreFile() {
   await mkdir(dataDir, { recursive: true });
   try {
     await readFile(dataFile, "utf8");
   } catch {
-    await writeStore(initialData);
+    await writeStoreFile(initialData);
   }
 }
 
 export async function readStore(): Promise<StoreData> {
-  await ensureStore();
+  return withStoreLock(readStoreFile);
+}
+
+async function readStoreFile(): Promise<StoreData> {
+  await ensureStoreFile();
   const raw = await readFile(dataFile, "utf8");
   const data = JSON.parse(raw) as StoreData;
   data.archiveFiles ??= initialData.archiveFiles;
@@ -133,15 +139,88 @@ export async function readStore(): Promise<StoreData> {
 }
 
 export async function writeStore(data: StoreData) {
-  await mkdir(dataDir, { recursive: true });
-  await writeFile(dataFile, JSON.stringify(data, null, 2), "utf8");
+  return enqueueStoreUpdate(() => withStoreLock(() => writeStoreFile(data)));
 }
 
 export async function updateStore<T>(updater: (data: StoreData) => T | Promise<T>) {
-  const data = await readStore();
-  const result = await updater(data);
-  await writeStore(data);
-  return result;
+  return enqueueStoreUpdate(async () => {
+    return withStoreLock(async () => {
+      const data = await readStoreFile();
+      const result = await updater(data);
+      await writeStoreFile(data);
+      return result;
+    });
+  });
+}
+
+async function writeStoreFile(data: StoreData) {
+  await mkdir(dataDir, { recursive: true });
+  const tempFile = path.join(dataDir, `store.${process.pid}.${Date.now()}.${Math.random().toString(36).slice(2)}.tmp`);
+  try {
+    await writeFile(tempFile, JSON.stringify(data, null, 2), "utf8");
+    await replaceStoreFile(tempFile);
+  } catch (error) {
+    await rm(tempFile, { force: true }).catch(() => undefined);
+    throw error;
+  }
+}
+
+async function enqueueStoreUpdate<T>(task: () => Promise<T>) {
+  const run = storeUpdateQueue.then(task, task);
+  storeUpdateQueue = run.catch(() => undefined);
+  return run;
+}
+
+async function withStoreLock<T>(task: () => Promise<T>): Promise<T> {
+  const release = await acquireStoreLock();
+  try {
+    return await task();
+  } finally {
+    await release();
+  }
+}
+
+async function acquireStoreLock() {
+  await mkdir(dataDir, { recursive: true });
+  const deadline = Date.now() + 15_000;
+
+  for (;;) {
+    try {
+      await mkdir(lockDir);
+      return () => rm(lockDir, { recursive: true, force: true });
+    } catch (error) {
+      if (getErrorCode(error) !== "EEXIST") throw error;
+      if (Date.now() > deadline) {
+        await rm(lockDir, { recursive: true, force: true }).catch(() => undefined);
+      }
+      await delay(25);
+    }
+  }
+}
+
+async function replaceStoreFile(tempFile: string) {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    try {
+      await rename(tempFile, dataFile);
+      return;
+    } catch (error) {
+      lastError = error;
+      if (!["EACCES", "EBUSY", "EPERM"].includes(getErrorCode(error))) throw error;
+      await delay(25 * (attempt + 1));
+    }
+  }
+  throw lastError;
+}
+
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function getErrorCode(error: unknown) {
+  if (typeof error !== "object" || error === null || !("code" in error)) return "";
+  const code = (error as { code?: unknown }).code;
+  return typeof code === "string" ? code : "";
 }
 
 export function calculateDashboardSummary(data: StoreData): DashboardSummary {
