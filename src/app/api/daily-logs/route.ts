@@ -1,10 +1,17 @@
 import { NextResponse } from "next/server";
+import { isPrismaBackendEnabled } from "@/lib/data-backend";
+import { getPrismaDailyLogs } from "@/lib/prisma-repository";
 import { addReviewItem, readStore, updateStore } from "@/lib/server-store";
 import { dailyLogSchema } from "@/lib/validators";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const status = searchParams.get("status");
+  if (isPrismaBackendEnabled()) {
+    const logs = await getPrismaDailyLogs();
+    const items = status ? logs.filter((item) => item.status === status) : logs;
+    return NextResponse.json({ ok: true, data: { items, pagination: { page: 1, pageSize: 20, total: items.length } } });
+  }
   const data = await readStore();
   const items = status ? data.dailyLogs.filter((item) => item.status === status) : data.dailyLogs;
   return NextResponse.json({ ok: true, data: { items, pagination: { page: 1, pageSize: 20, total: items.length } } });

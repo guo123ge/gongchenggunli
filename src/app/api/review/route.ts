@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { isPrismaBackendEnabled } from "@/lib/data-backend";
+import { approvePrismaReview, getPrismaReviewItems } from "@/lib/prisma-repository";
 import { closeReviewItem, readStore, updateStore } from "@/lib/server-store";
 import { reviewSchema } from "@/lib/validators";
 
 export async function GET() {
+  if (isPrismaBackendEnabled()) return NextResponse.json({ ok: true, data: await getPrismaReviewItems() });
   const data = await readStore();
   return NextResponse.json({ ok: true, data: data.reviewItems });
 }
@@ -18,6 +21,24 @@ export async function POST(request: Request) {
   const parsed = reviewSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ ok: false, error: "审核参数无效", details: parsed.error.flatten() }, { status: 422 });
+  }
+
+  if (isPrismaBackendEnabled()) {
+    try {
+      const target = await approvePrismaReview(parsed.data.targetType, parsed.data.targetId, parsed.data.action, parsed.data.comment);
+      return NextResponse.json({
+        ok: true,
+        data: {
+          ...parsed.data,
+          status: parsed.data.action === "approve" ? "approved" : "rejected",
+          target,
+          reviewedAt: new Date().toISOString(),
+          reviewer: "周项目",
+        },
+      });
+    } catch (error) {
+      return NextResponse.json({ ok: false, error: error instanceof Error ? error.message : "审核失败" }, { status: 409 });
+    }
   }
 
   const result = await updateStore((data) => {

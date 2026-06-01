@@ -43,3 +43,28 @@ npm.cmd run build
 
 当前项目使用 Next.js 14.2.32、React 18.3.1、Prisma 6.19.0，以匹配计划书中的 Next 14 架构并避开当前 Windows 环境下 Next 16/SWC 的兼容问题。
 
+## 数据库模式
+
+默认 `DATA_BACKEND=json`，使用 `.local-data/store.json` 作为本地可运行数据层。
+
+如果本机安装了 Docker/PostgreSQL，可切换到 Prisma/PostgreSQL：
+
+```bash
+docker compose up -d postgres
+npm.cmd run prisma:migrate -- --name init
+npm.cmd run db:seed
+```
+
+然后把 `.env.local` 改为：
+
+```env
+DATA_BACKEND="prisma"
+```
+
+可用以下命令验证数据库模式：
+
+```bash
+npm.cmd run verify:prisma
+```
+
+如果本机没有 PostgreSQL 或 Docker，会看到 `Can't reach database server at localhost:5432`。这表示代码已进入 Prisma 连接阶段，但数据库服务尚未启动。

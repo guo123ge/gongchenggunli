@@ -1,8 +1,13 @@
 import { NextResponse } from "next/server";
+import { isPrismaBackendEnabled } from "@/lib/data-backend";
+import { getPrismaMaterials } from "@/lib/prisma-repository";
 import { readStore, updateStore } from "@/lib/server-store";
 import { materialSchema } from "@/lib/validators";
 
 export async function GET() {
+  if (isPrismaBackendEnabled()) {
+    return NextResponse.json({ ok: true, data: await getPrismaMaterials() });
+  }
   const data = await readStore();
   return NextResponse.json({ ok: true, data: data.materials });
 }

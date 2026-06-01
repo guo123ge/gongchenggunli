@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: construction-site-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: construction_site
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - construction_site_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d construction_site"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  construction_site_pg:
+

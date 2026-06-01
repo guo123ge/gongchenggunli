@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
+import { isPrismaBackendEnabled } from "@/lib/data-backend";
+import { getPrismaStockOuts } from "@/lib/prisma-repository";
 import { addReviewItem, readStore, updateStore } from "@/lib/server-store";
 
 export async function GET() {
+  if (isPrismaBackendEnabled()) return NextResponse.json({ ok: true, data: await getPrismaStockOuts() });
   const data = await readStore();
   return NextResponse.json({ ok: true, data: data.stockOuts });
 }
