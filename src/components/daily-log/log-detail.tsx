@@ -3,10 +3,9 @@ import { LaborStats } from "@/components/daily-log/labor-stats";
 import { ReviewFlow } from "@/components/shared/review-flow";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { WatermarkPhoto } from "@/components/shared/watermark-photo";
-import { project } from "@/lib/mock-data";
-import type { DailyLog } from "@/types";
+import type { DailyLog, Project } from "@/types";
 
-export function LogDetail({ log }: { log: DailyLog }) {
+export function LogDetail({ log, project }: { log: DailyLog; project: Project }) {
   return (
     <div className="space-y-6">
       <Card>
@@ -53,4 +52,3 @@ export function LogDetail({ log }: { log: DailyLog }) {
     </div>
   );
 }
-

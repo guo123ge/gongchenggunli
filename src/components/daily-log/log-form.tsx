@@ -9,9 +9,9 @@ import { DraftIndicator } from "@/components/shared/draft-indicator";
 import { ImageUpload } from "@/components/shared/image-upload";
 import { VoiceRecorder } from "@/components/shared/voice-recorder";
 import { TemplateSelector } from "@/components/daily-log/template-selector";
-import { project } from "@/lib/mock-data";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useDraftStore } from "@/stores/draft-store";
+import type { Project } from "@/types";
 
 type FormState = {
   workDate: string;
@@ -39,7 +39,7 @@ const initialState: FormState = {
   safetyCheck: "",
 };
 
-export function LogForm() {
+export function LogForm({ project }: { project: Project }) {
   const [form, setForm] = useState<FormState>(initialState);
   const debounced = useDebounce(form, 1200);
   const { saving, saveDraft } = useDraftStore();
@@ -156,4 +156,3 @@ export function LogForm() {
     </div>
   );
 }
-

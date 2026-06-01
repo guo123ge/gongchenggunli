@@ -10,9 +10,14 @@ import {
   WalletCards,
 } from "lucide-react";
 import { MODULE_LABELS, ROLE_LABELS } from "@/lib/constants";
-import { currentUser, project } from "@/lib/mock-data";
 import { canView } from "@/lib/permissions";
-import type { ModuleKey } from "@/types/enums";
+import type { Project } from "@/types";
+import type { ModuleKey, ProjectRole } from "@/types/enums";
+
+type SidebarUser = {
+  displayName: string;
+  role: ProjectRole;
+};
 
 const navItems: Array<{ key: ModuleKey; href: string; icon: React.ComponentType<{ className?: string }> }> = [
   { key: "dashboard", href: "/dashboard", icon: Gauge },
@@ -25,21 +30,21 @@ const navItems: Array<{ key: ModuleKey; href: string; icon: React.ComponentType<
   { key: "review", href: "/review", icon: ClipboardCheck },
 ];
 
-export function Sidebar() {
+export function Sidebar({ currentUser, project }: { currentUser: SidebarUser; project: Project }) {
   const visibleItems = navItems.filter((item) => canView(item.key, currentUser.role));
 
   return (
     <aside className="hidden min-h-screen w-72 shrink-0 border-r border-border bg-black/25 p-5 lg:block">
       <Link href="/dashboard" className="flex items-center gap-3">
-        <div className="grid size-12 place-items-center rounded-2xl bg-brand text-lg font-black text-black">建</div>
+        <div className="grid size-12 place-items-center rounded-2xl bg-brand text-lg font-black text-black">CS</div>
         <div>
           <p className="text-sm text-muted">Construction OS</p>
-          <h1 className="font-bold text-white">施工现场综合管理平台</h1>
+          <h1 className="font-bold text-white">Site Management Platform</h1>
         </div>
       </Link>
 
       <div className="mt-6 rounded-3xl border border-border bg-panel-soft p-4">
-        <p className="text-xs uppercase tracking-[0.2em] text-muted">当前项目</p>
+        <p className="text-xs uppercase tracking-[0.2em] text-muted">Current project</p>
         <p className="mt-2 font-semibold leading-6 text-white">{project.name}</p>
         <p className="mt-1 text-xs text-muted">{project.code}</p>
       </div>
@@ -58,11 +63,11 @@ export function Sidebar() {
       </nav>
 
       <div className="mt-8 rounded-3xl border border-brand/20 bg-brand-soft/40 p-4 text-sm">
-        <p className="text-muted">登录身份</p>
+        <p className="text-muted">Signed in as</p>
         <p className="mt-1 font-semibold text-white">
-          {currentUser.displayName} · {ROLE_LABELS[currentUser.role]}
+          {currentUser.displayName} / {ROLE_LABELS[currentUser.role]}
         </p>
-        <p className="mt-2 text-xs leading-5 text-muted">演示账号统一密码：123456。后续接入 Prisma 后可切换为真实项目成员。</p>
+        <p className="mt-2 text-xs leading-5 text-muted">Demo accounts use password 123456. Navigation follows the active session role.</p>
       </div>
     </aside>
   );

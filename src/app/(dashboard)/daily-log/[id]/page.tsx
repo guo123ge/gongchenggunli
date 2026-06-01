@@ -9,5 +9,5 @@ export default async function DailyLogDetailPage({ params }: { params: Promise<{
   const data = await readAppData();
   const log = data.dailyLogs.find((item) => item.id === id);
   if (!log) notFound();
-  return <LogDetail log={log} />;
+  return <LogDetail log={log} project={data.project} />;
 }
