@@ -14,6 +14,8 @@ export const ROLE_LABELS: Record<ProjectRole, string> = {
 
 export const MODULE_LABELS: Record<ModuleKey, string> = {
   dashboard: "首页",
+  project: "项目管理",
+  documents: "资料库",
   "daily-log": "施工日志",
   material: "材料管理",
   machinery: "机械管理",
@@ -29,7 +31,7 @@ export const DAILY_LOG_TEMPLATES = [
     name: "混凝土浇筑",
     workContent: "完成地下室顶板混凝土浇筑，泵送、振捣、收面同步进行。",
     workProcess: "模板验收 -> 钢筋隐蔽验收 -> 浇筑 -> 养护",
-    qualityCheck: "塌落度、试块留置、振捣密实度符合要求。",
+    qualityCheck: "坍落度、试块留置、振捣密实度符合要求。",
     safetyCheck: "泵管固定牢靠，临边防护完整，夜间照明充足。",
   },
   {
@@ -51,4 +53,3 @@ export const DAILY_LOG_TEMPLATES = [
 ];
 
 export const MATERIAL_CATEGORIES = ["钢筋", "混凝土", "木材", "防水", "装饰", "其他"];
-

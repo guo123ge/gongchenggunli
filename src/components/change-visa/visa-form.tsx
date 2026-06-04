@@ -12,10 +12,10 @@ import { CostSummary } from "./cost-summary";
 export function VisaForm() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [title, setTitle] = useState("Night work lighting shift");
-  const [visaType, setVisaType] = useState("material_machinery");
+  const [title, setTitle] = useState("夜间抢工照明台班签证");
+  const [visaType, setVisaType] = useState("材料机械");
   const [totalAmount, setTotalAmount] = useState("5760");
-  const [reason, setReason] = useState("Additional lighting and generator shift for night rush work.");
+  const [reason, setReason] = useState("夜间抢工增加照明与发电机台班。");
 
   async function submit() {
     const response = await fetch("/api/visas", {
@@ -25,10 +25,10 @@ export function VisaForm() {
     });
     const body = await response.json().catch(() => ({}));
     if (!response.ok || body.ok === false) {
-      toast.error(body.error ?? "Visa submission failed.");
+      toast.error(body.error ?? "签证提交失败。");
       return;
     }
-    toast.success("Visa submitted.");
+    toast.success("签证已提交。");
     startTransition(() => router.push("/change-visa"));
   }
 
@@ -36,25 +36,25 @@ export function VisaForm() {
     <Card>
       <CardHeader>
         <div>
-          <CardTitle>Engineering visa</CardTitle>
-          <CardDescription>Record quantities, cost, reason, and total amount.</CardDescription>
+          <CardTitle>工程签证</CardTitle>
+          <CardDescription>记录工程量、费用、原因与总金额。</CardDescription>
         </div>
       </CardHeader>
       <div className="mb-5 grid gap-4 md:grid-cols-2">
         <div>
-          <Label htmlFor="visa-title">Visa title</Label>
+          <Label htmlFor="visa-title">签证标题</Label>
           <Input id="visa-title" value={title} onChange={(event) => setTitle(event.target.value)} />
         </div>
         <div>
-          <Label htmlFor="visa-type">Visa type</Label>
+          <Label htmlFor="visa-type">签证类型</Label>
           <Input id="visa-type" value={visaType} onChange={(event) => setVisaType(event.target.value)} />
         </div>
         <div>
-          <Label htmlFor="visa-total-amount">Total amount</Label>
+          <Label htmlFor="visa-total-amount">总金额</Label>
           <Input id="visa-total-amount" type="number" value={totalAmount} onChange={(event) => setTotalAmount(event.target.value)} />
         </div>
         <div className="md:col-span-2">
-          <Label htmlFor="visa-reason">Reason</Label>
+          <Label htmlFor="visa-reason">签证原因</Label>
           <Textarea id="visa-reason" value={reason} onChange={(event) => setReason(event.target.value)} />
         </div>
       </div>
@@ -64,7 +64,7 @@ export function VisaForm() {
       </div>
       <div className="mt-6 flex justify-end">
         <Button type="button" onClick={submit} disabled={isPending || !title.trim()}>
-          {isPending ? "Submitting..." : "Submit visa"}
+          {isPending ? "提交中..." : "提交签证"}
         </Button>
       </div>
     </Card>

@@ -20,6 +20,7 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     "/dashboard/:path*",
+    "/projects/:path*",
     "/daily-log/:path*",
     "/material/:path*",
     "/machinery/:path*",

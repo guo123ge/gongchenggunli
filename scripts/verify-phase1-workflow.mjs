@@ -40,10 +40,16 @@ async function loginAsPm() {
 
 await loginAsPm();
 
+const projects = await request("/api/projects");
+const projectId = projects[0]?.id ?? "p-demo";
+
+const materialsSeed = await request("/api/materials");
+const firstMaterialId = materialsSeed[0]?.id ?? "mat-001";
+
 const createdLog = await request("/api/daily-logs", {
   method: "POST",
   body: JSON.stringify({
-    projectId: "p-demo",
+    projectId,
     workDate: "2026-06-01",
     weather: "晴",
     tempLow: 22,
@@ -70,12 +76,12 @@ await request("/api/review", {
 });
 
 const materialsBefore = await request("/api/materials");
-const steelBefore = materialsBefore.find((item) => item.id === "mat-001");
+const steelBefore = materialsBefore.find((item) => item.id === firstMaterialId);
 
 const stockIn = await request("/api/materials/stock-in", {
   method: "POST",
   body: JSON.stringify({
-    materialId: "mat-001",
+    materialId: firstMaterialId,
     billNo: `RK-VERIFY-${Date.now()}`,
     quantity: 2,
     supplier: "自动化供应商",
@@ -93,7 +99,7 @@ await request("/api/review", {
 });
 
 const materialsAfter = await request("/api/materials");
-const steelAfter = materialsAfter.find((item) => item.id === "mat-001");
+const steelAfter = materialsAfter.find((item) => item.id === firstMaterialId);
 
 if (!steelBefore || !steelAfter || steelAfter.currentStock !== steelBefore.currentStock + 2) {
   throw new Error(`库存联动失败：before=${steelBefore?.currentStock}, after=${steelAfter?.currentStock}`);

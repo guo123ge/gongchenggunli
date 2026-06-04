@@ -57,7 +57,7 @@ async function getDefaultSubmittedById(username = "pm") {
   const user = await prisma.user.findUnique({ where: { username } });
   if (user) return user.id;
   const fallback = await prisma.user.findFirst({ orderBy: { createdAt: "asc" } });
-  if (!fallback) throw new Error("Prisma backend has no user seed data. Run npm.cmd run db:seed.");
+  if (!fallback) throw new Error("Prisma 后端缺少用户种子数据，请先执行 npm.cmd run db:seed。");
   return fallback.id;
 }
 
@@ -409,7 +409,7 @@ export async function getPrismaHazards(): Promise<Hazard[]> {
 
 export async function createPrismaHazard(body: Record<string, unknown>): Promise<Hazard> {
   const projectId = String(body.projectId ?? (await getPrismaProjects())[0]?.id ?? "");
-  if (!projectId) throw new Error("Prisma backend has no project seed data. Run npm.cmd run db:seed.");
+  if (!projectId) throw new Error("Prisma 后端缺少项目种子数据，请先执行 npm.cmd run db:seed。");
   const submittedById = await getDefaultSubmittedById("safe");
   const created = await prisma.safetyHazard.create({
     data: {
@@ -484,15 +484,15 @@ export async function getPrismaIncidents(): Promise<SafetyIncident[]> {
 
 export async function createPrismaIncident(body: Record<string, unknown>): Promise<SafetyIncident> {
   const projectId = String(body.projectId ?? (await getPrismaProjects())[0]?.id ?? "");
-  if (!projectId) throw new Error("Prisma backend has no project seed data. Run npm.cmd run db:seed.");
+  if (!projectId) throw new Error("Prisma 后端缺少项目种子数据，请先执行 npm.cmd run db:seed。");
   const submittedById = await getDefaultSubmittedById("safe");
   const created = await prisma.safetyIncident.create({
     data: {
       projectId,
-      title: String(body.title ?? "Untitled safety incident"),
+      title: String(body.title ?? "未命名安全事件"),
       incidentDate: new Date(String(body.incidentDate ?? new Date().toISOString())),
       level: String(body.level ?? body.riskLevel ?? "medium"),
-      description: String(body.description ?? body.title ?? "Pending incident description"),
+      description: String(body.description ?? body.title ?? "待补充事件描述"),
       status: String(body.status ?? "submitted"),
       submittedById,
     },
@@ -559,7 +559,7 @@ export async function getPrismaMachinery(): Promise<Machinery[]> {
 
 export async function createPrismaMachinery(body: Record<string, unknown>): Promise<Machinery> {
   const projectId = String(body.projectId ?? (await getPrismaProjects())[0]?.id ?? "");
-  if (!projectId) throw new Error("Prisma backend has no project seed data. Run npm.cmd run db:seed.");
+  if (!projectId) throw new Error("Prisma 后端缺少项目种子数据，请先执行 npm.cmd run db:seed。");
   const submittedById = await getDefaultSubmittedById("mach");
   const created = await prisma.machinery.create({
     data: {
@@ -568,7 +568,7 @@ export async function createPrismaMachinery(body: Record<string, unknown>): Prom
       code: String(body.code ?? `MC-${Date.now()}`),
       model: String(body.model ?? "待补充"),
       operator: String(body.operator ?? "待分配"),
-      status: String(body.status ?? "onsite"),
+      status: String(body.status ?? "submitted"),
       enteredAt: new Date(String(body.enteredAt ?? new Date().toISOString())),
       nextMaintenanceDate: body.nextMaintenanceDate === undefined ? undefined : new Date(String(body.nextMaintenanceDate)),
       submittedById,
@@ -685,7 +685,7 @@ export async function createPrismaShiftRecord(machineryId: string, body: Record<
       machineryId,
       workDate: new Date(String(body.workDate ?? new Date().toISOString())),
       shiftHours: Number(body.shiftHours ?? 0),
-      workContent: String(body.workContent ?? "Shift work"),
+      workContent: String(body.workContent ?? "台班作业"),
       submittedById,
     },
     include: { submittedBy: true },
@@ -719,7 +719,7 @@ export async function getPrismaArchives(): Promise<ArchiveRecord[]> {
 
 export async function createPrismaArchive(body: Record<string, unknown>): Promise<ArchiveRecord> {
   const projectId = String(body.projectId ?? (await getPrismaProjects())[0]?.id ?? "");
-  if (!projectId) throw new Error("Prisma backend has no project seed data. Run npm.cmd run db:seed.");
+  if (!projectId) throw new Error("Prisma 后端缺少项目种子数据，请先执行 npm.cmd run db:seed。");
   const submittedById = await getDefaultSubmittedById("doc");
   const tags = Array.isArray(body.tags) ? body.tags.join(",") : String(body.tags ?? "");
   const created = await prisma.archive.create({
@@ -843,7 +843,7 @@ export async function getPrismaChanges(): Promise<ChangeRecord[]> {
 
 export async function createPrismaChange(body: Record<string, unknown>): Promise<ChangeRecord> {
   const projectId = String(body.projectId ?? (await getPrismaProjects())[0]?.id ?? "");
-  if (!projectId) throw new Error("Prisma backend has no project seed data. Run npm.cmd run db:seed.");
+  if (!projectId) throw new Error("Prisma 后端缺少项目种子数据，请先执行 npm.cmd run db:seed。");
   const submittedById = await getDefaultSubmittedById("tech");
   const created = await prisma.designChange.create({
     data: {
@@ -921,7 +921,7 @@ export async function getPrismaVisas(): Promise<VisaRecord[]> {
 
 export async function createPrismaVisa(body: Record<string, unknown>): Promise<VisaRecord> {
   const projectId = String(body.projectId ?? (await getPrismaProjects())[0]?.id ?? "");
-  if (!projectId) throw new Error("Prisma backend has no project seed data. Run npm.cmd run db:seed.");
+  if (!projectId) throw new Error("Prisma 后端缺少项目种子数据，请先执行 npm.cmd run db:seed。");
   const submittedById = await getDefaultSubmittedById("tech");
   const created = await prisma.engineeringVisa.create({
     data: {
@@ -1129,10 +1129,11 @@ export async function readPrismaStore(): Promise<StoreData> {
   ]);
 
   const project = projects[0];
-  if (!project) throw new Error("Prisma backend has no project seed data. Run npm.cmd run db:seed.");
+  if (!project) throw new Error("Prisma 后端缺少项目种子数据，请先执行 npm.cmd run db:seed。");
 
   return {
     project,
+    projects,
     dailyLogs,
     materials,
     stockIns,
@@ -1146,6 +1147,7 @@ export async function readPrismaStore(): Promise<StoreData> {
     reviewItems,
     archives,
     archiveFiles,
+    documents: [],
     changes,
     visas,
   };

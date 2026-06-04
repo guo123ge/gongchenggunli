@@ -10,7 +10,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   const { id } = await params;
   const data = await readAppData();
   const material = data.materials.find((item) => item.id === id);
-  if (!material) return NextResponse.json({ ok: false, error: "Material does not exist" }, { status: 404 });
+  if (!material) return NextResponse.json({ ok: false, error: "材料不存在" }, { status: 404 });
   return NextResponse.json({ ok: true, data: material });
 }
 
@@ -19,7 +19,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const body = await request.json().catch(() => ({}));
   if (isPrismaBackendEnabled()) {
     const updated = await updatePrismaMaterial(id, body);
-    if (!updated) return NextResponse.json({ ok: false, error: "Material does not exist" }, { status: 404 });
+    if (!updated) return NextResponse.json({ ok: false, error: "材料不存在" }, { status: 404 });
     return NextResponse.json({ ok: true, data: updated });
   }
   const updated = await updateStore((data) => {
@@ -35,7 +35,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     };
     return data.materials[index];
   });
-  if (!updated) return NextResponse.json({ ok: false, error: "Material does not exist" }, { status: 404 });
+  if (!updated) return NextResponse.json({ ok: false, error: "材料不存在" }, { status: 404 });
   return NextResponse.json({ ok: true, data: updated });
 }
 
@@ -43,7 +43,7 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   const { id } = await params;
   if (isPrismaBackendEnabled()) {
     const deleted = await deletePrismaMaterial(id);
-    if (!deleted) return NextResponse.json({ ok: false, error: "Material does not exist" }, { status: 404 });
+    if (!deleted) return NextResponse.json({ ok: false, error: "材料不存在" }, { status: 404 });
     return NextResponse.json({ ok: true, data: { id, deleted: true } });
   }
   const deleted = await updateStore((data) => {
@@ -53,6 +53,6 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     data.stockOuts = data.stockOuts.filter((item) => item.materialId !== id);
     return exists;
   });
-  if (!deleted) return NextResponse.json({ ok: false, error: "Material does not exist" }, { status: 404 });
+  if (!deleted) return NextResponse.json({ ok: false, error: "材料不存在" }, { status: 404 });
   return NextResponse.json({ ok: true, data: { id, deleted: true } });
 }

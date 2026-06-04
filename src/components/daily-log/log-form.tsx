@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { TemplateSelector } from "@/components/daily-log/template-selector";
+import { DraftIndicator } from "@/components/shared/draft-indicator";
+import { ImageUpload, type UploadedImage } from "@/components/shared/image-upload";
+import { VoiceRecorder } from "@/components/shared/voice-recorder";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input, Label, Textarea } from "@/components/ui/input";
-import { DraftIndicator } from "@/components/shared/draft-indicator";
-import { ImageUpload } from "@/components/shared/image-upload";
-import { VoiceRecorder } from "@/components/shared/voice-recorder";
-import { TemplateSelector } from "@/components/daily-log/template-selector";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useDraftStore } from "@/stores/draft-store";
 import type { Project } from "@/types";
@@ -41,6 +41,7 @@ const initialState: FormState = {
 
 export function LogForm({ project }: { project: Project }) {
   const [form, setForm] = useState<FormState>(initialState);
+  const [images, setImages] = useState<UploadedImage[]>([]);
   const debounced = useDebounce(form, 1200);
   const { saving, saveDraft } = useDraftStore();
 
@@ -66,11 +67,21 @@ export function LogForm({ project }: { project: Project }) {
         laborDetail: [{ type: "混凝土工", count: Number(form.laborCount) }],
         machineryUsed: ["塔吊 1#", "汽车泵"],
         materialUsed: [{ name: "C35 商品混凝土", quantity: 238, unit: "m3" }],
+        attachments: images.map((item) => ({
+          id: item.id,
+          fileName: item.fileName,
+          url: item.uploadedUrl ?? item.previewUrl,
+          fileType: item.fileType,
+          hasWatermark: true,
+        })),
       }),
     });
-    const body = await response.json();
-    if (body.ok) toast.success(status === "draft" ? "草稿已保存" : "已提交审核");
-    else toast.error(body.error ?? "提交失败");
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok || body.ok === false) {
+      toast.error(body.error ?? "日志提交失败。");
+      return;
+    }
+    toast.success(status === "draft" ? "草稿已保存。" : "日志已提交审核。");
   }
 
   return (
@@ -79,7 +90,7 @@ export function LogForm({ project }: { project: Project }) {
         <CardHeader>
           <div>
             <CardTitle>新建施工日志</CardTitle>
-            <CardDescription>支持模板填充、自动草稿、照片水印和离线队列。</CardDescription>
+            <CardDescription>支持模板填充、自动草稿、照片集中入库和语音转写。</CardDescription>
           </div>
           <DraftIndicator saving={saving} />
         </CardHeader>
@@ -142,12 +153,19 @@ export function LogForm({ project }: { project: Project }) {
         </div>
       </Card>
 
-      <ImageUpload />
-      <VoiceRecorder />
+      <ImageUpload module="daily-log" titlePrefix="施工日志照片" onChange={setImages} />
+      <VoiceRecorder
+        onTranscript={(text) =>
+          setForm((current) => ({
+            ...current,
+            workContent: current.workContent ? `${current.workContent}\n${text}` : text,
+          }))
+        }
+      />
 
       <div className="flex flex-wrap justify-end gap-3">
         <Button type="button" variant="secondary" onClick={() => submit("draft")}>
-          存为草稿
+          保存为草稿
         </Button>
         <Button type="button" onClick={() => submit("submitted")}>
           提交审核

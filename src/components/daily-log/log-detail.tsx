@@ -1,19 +1,34 @@
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { LaborStats } from "@/components/daily-log/labor-stats";
 import { ReviewFlow } from "@/components/shared/review-flow";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { WatermarkPhoto } from "@/components/shared/watermark-photo";
+import { Button } from "@/components/ui/button";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { DailyLog, Project } from "@/types";
 
 export function LogDetail({ log, project }: { log: DailyLog; project: Project }) {
   return (
     <div className="space-y-6">
+      <div className="flex flex-wrap gap-2">
+        <Link href="/review">
+          <Button type="button" variant="secondary" className="gap-2">
+            <ArrowLeft className="size-4" />
+            返回审核中心
+          </Button>
+        </Link>
+        <Link href="/daily-log">
+          <Button type="button" variant="ghost">返回日志列表</Button>
+        </Link>
+      </div>
+
       <Card>
         <CardHeader>
           <div>
-            <CardTitle>{log.workPosition} · {log.workProcess}</CardTitle>
+            <CardTitle>{log.workPosition} / {log.workProcess}</CardTitle>
             <CardDescription>
-              {log.workDate} · {log.weather} · {log.tempLow}-{log.tempHigh}℃ · 提交人 {log.submittedBy}
+              {log.workDate} / {log.weather} / {log.tempLow}-{log.tempHigh}℃ / 提交人 {log.submittedBy}
             </CardDescription>
           </div>
           <StatusBadge status={log.status} />
@@ -41,7 +56,7 @@ export function LogDetail({ log, project }: { log: DailyLog; project: Project })
             <WatermarkPhoto src="/logo.svg" projectName={project.name} position={log.workPosition} />
             <div className="rounded-2xl border border-border bg-panel-soft p-4">
               <p className="font-semibold text-white">审核操作</p>
-              <p className="mt-1 text-sm text-muted">PM 可对提交记录统一审批，审批通过后记录锁定。</p>
+              <p className="mt-1 text-sm text-muted">项目经理可对提交记录统一审批，审核通过后记录锁定。</p>
               <div className="mt-4">
                 <ReviewFlow targetType="daily-log" targetId={log.id} />
               </div>

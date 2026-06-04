@@ -19,7 +19,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       const created = await createPrismaMaintenanceRecord(id, body);
       return NextResponse.json({ ok: true, data: created });
     } catch {
-      return NextResponse.json({ ok: false, error: "Machinery does not exist" }, { status: 404 });
+      return NextResponse.json({ ok: false, error: "机械不存在" }, { status: 404 });
     }
   }
 
@@ -28,14 +28,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const item: MaintenanceRecord = {
       id: crypto.randomUUID(),
       machineryId: id,
-      content: String(body.content ?? "Maintenance record"),
+      content: String(body.content ?? "保养记录"),
       cost: Number(body.cost ?? 0),
-      handledBy: String(body.handledBy ?? "Machinery Lead"),
+      handledBy: String(body.handledBy ?? "机械管理员"),
       createdAt: new Date().toLocaleString("zh-CN"),
     };
     data.maintenanceRecords.unshift(item);
     return item;
   });
-  if (!created) return NextResponse.json({ ok: false, error: "Machinery does not exist" }, { status: 404 });
+  if (!created) return NextResponse.json({ ok: false, error: "机械不存在" }, { status: 404 });
   return NextResponse.json({ ok: true, data: created });
 }

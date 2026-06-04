@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { ClipboardCheck, FileClock, Gauge, PackageCheck, ShieldAlert } from "lucide-react";
+import { ClipboardCheck, FileClock, Files, FolderKanban, Gauge } from "lucide-react";
 
 const items = [
   { href: "/dashboard", label: "首页", icon: Gauge },
+  { href: "/projects", label: "项目", icon: FolderKanban },
+  { href: "/documents", label: "资料", icon: Files },
   { href: "/daily-log", label: "日志", icon: FileClock },
-  { href: "/material", label: "材料", icon: PackageCheck },
-  { href: "/safety", label: "安全", icon: ShieldAlert },
   { href: "/review", label: "审核", icon: ClipboardCheck },
 ];
 
@@ -21,4 +21,3 @@ export function MobileNav() {
     </nav>
   );
 }
-

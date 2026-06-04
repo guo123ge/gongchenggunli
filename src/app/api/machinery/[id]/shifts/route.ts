@@ -19,7 +19,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       const created = await createPrismaShiftRecord(id, body);
       return NextResponse.json({ ok: true, data: created });
     } catch {
-      return NextResponse.json({ ok: false, error: "Machinery does not exist" }, { status: 404 });
+      return NextResponse.json({ ok: false, error: "机械不存在" }, { status: 404 });
     }
   }
 
@@ -31,13 +31,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       machineryId: id,
       workDate: String(body.workDate ?? new Date().toISOString().slice(0, 10)),
       shiftHours: Number(body.shiftHours ?? 0),
-      workContent: String(body.workContent ?? "Shift work"),
-      submittedBy: String(body.submittedBy ?? "Machinery Lead"),
+      workContent: String(body.workContent ?? "台班作业"),
+      submittedBy: String(body.submittedBy ?? "机械管理员"),
     };
     data.shiftRecords.unshift(item);
     machine.shiftsThisMonth += 1;
     return item;
   });
-  if (!created) return NextResponse.json({ ok: false, error: "Machinery does not exist" }, { status: 404 });
+  if (!created) return NextResponse.json({ ok: false, error: "机械不存在" }, { status: 404 });
   return NextResponse.json({ ok: true, data: created });
 }

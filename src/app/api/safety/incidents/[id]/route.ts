@@ -8,7 +8,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   const { id } = await params;
   const data = await readAppData();
   const item = data.incidents.find((incident) => incident.id === id);
-  if (!item) return NextResponse.json({ ok: false, error: "Safety incident does not exist" }, { status: 404 });
+  if (!item) return NextResponse.json({ ok: false, error: "安全事件不存在" }, { status: 404 });
   return NextResponse.json({ ok: true, data: item });
 }
 
@@ -17,7 +17,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const body = await request.json().catch(() => ({}));
   if (isPrismaBackendEnabled()) {
     const updated = await updatePrismaIncident(id, body);
-    if (!updated) return NextResponse.json({ ok: false, error: "Safety incident does not exist" }, { status: 404 });
+    if (!updated) return NextResponse.json({ ok: false, error: "安全事件不存在" }, { status: 404 });
     return NextResponse.json({ ok: true, data: updated });
   }
 
@@ -27,6 +27,6 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     data.incidents[index] = { ...data.incidents[index], ...body };
     return data.incidents[index];
   });
-  if (!updated) return NextResponse.json({ ok: false, error: "Safety incident does not exist" }, { status: 404 });
+  if (!updated) return NextResponse.json({ ok: false, error: "安全事件不存在" }, { status: 404 });
   return NextResponse.json({ ok: true, data: updated });
 }

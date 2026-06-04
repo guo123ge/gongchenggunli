@@ -1,17 +1,15 @@
-# Prisma/PostgreSQL runbook
+# Prisma / PostgreSQL 运行说明
 
-The app runs with `DATA_BACKEND=json` by default so the MVP can be used without
-an external database. Use this runbook when PostgreSQL or Docker is available
-and you want to verify the Prisma backend.
+默认 `DATA_BACKEND=json`，可直接运行。若要启用 PostgreSQL（推荐用于正式环境），按以下步骤执行。
 
-## Local Docker path
+## 本地 Docker 方式
 
 ```powershell
 docker compose up -d postgres
 npm.cmd run db:prepare
 ```
 
-`db:prepare` runs these steps in order:
+`db:prepare` 依次执行：
 
 ```powershell
 npx.cmd prisma generate
@@ -20,25 +18,14 @@ npm.cmd run db:seed
 npm.cmd run verify:prisma
 ```
 
-After `verify:prisma` succeeds, switch `.env.local` to:
+验证通过后，将 `.env.local` 切换为：
 
 ```env
 DATA_BACKEND="prisma"
 ```
 
-Then restart the Next.js server.
+然后重启 Next.js 服务。
 
-## Current machine status
+## 当前机器判定
 
-On this workstation, the Prisma code path is ready but the external service is
-not available yet:
-
-```text
-docker: command not found
-psql: command not found
-pg_ctl: command not found
-localhost:5432: connection failed
-```
-
-Because of that, `npm.cmd run verify:prisma` is expected to return
-`POSTGRES_UNAVAILABLE` until PostgreSQL is installed or started.
+如果本机 PostgreSQL 或 Docker 未启动，`verify:prisma` 可能返回 `POSTGRES_UNAVAILABLE`，表示代码路径正常但数据库服务不可用。此时先启动数据库，再重新执行 `db:prepare`。

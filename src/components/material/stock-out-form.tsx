@@ -9,23 +9,26 @@ import { MaterialSelector } from "@/components/material/material-selector";
 
 export function StockOutForm() {
   const [materialId, setMaterialId] = useState("");
+  const [quantity, setQuantity] = useState("420");
+  const [receiver, setReceiver] = useState("防水班组");
+  const [usagePosition, setUsagePosition] = useState("地下室外墙");
 
   async function submit() {
     if (!materialId) {
-      toast.error("Please select a material first.");
+      toast.error("请先选择材料。");
       return;
     }
 
     const response = await fetch("/api/materials/stock-out", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ materialId, quantity: 420, billNo: "CK-NEW" }),
+      body: JSON.stringify({ materialId, quantity: Number(quantity || 0), billNo: "CK-NEW", receiver, usagePosition }),
     });
     const body = await response.json();
     if (body.ok) {
-      toast.success("Stock-out record submitted for review.");
+      toast.success("出库记录已提交审核。");
     } else {
-      toast.error(body.error ?? "Stock-out submission failed.");
+      toast.error(body.error ?? "出库提交失败。");
     }
   }
 
@@ -33,27 +36,27 @@ export function StockOutForm() {
     <Card>
       <CardHeader>
         <div>
-          <CardTitle>Material stock-out</CardTitle>
-          <CardDescription>Select material, check current stock, and submit a stock-out record.</CardDescription>
+          <CardTitle>材料出库</CardTitle>
+          <CardDescription>选择材料、核对库存并提交出库记录。</CardDescription>
         </div>
       </CardHeader>
       <div className="grid gap-4 md:grid-cols-2">
         <MaterialSelector onSelect={setMaterialId} />
         <div>
-          <Label>Stock-out quantity</Label>
-          <Input type="number" defaultValue="420" />
+          <Label>出库数量</Label>
+          <Input type="number" value={quantity} onChange={(event) => setQuantity(event.target.value)} />
         </div>
         <div>
-          <Label>Receiving team</Label>
-          <Input defaultValue="Waterproofing team" />
+          <Label>领用班组</Label>
+          <Input value={receiver} onChange={(event) => setReceiver(event.target.value)} />
         </div>
         <div>
-          <Label>Usage area</Label>
-          <Input defaultValue="Basement exterior wall" />
+          <Label>使用部位</Label>
+          <Input value={usagePosition} onChange={(event) => setUsagePosition(event.target.value)} />
         </div>
       </div>
       <div className="mt-6 flex justify-end">
-        <Button onClick={submit} disabled={!materialId}>Submit for review</Button>
+        <Button onClick={submit} disabled={!materialId || Number(quantity) <= 0}>提交审核</Button>
       </div>
     </Card>
   );

@@ -10,9 +10,9 @@ import { Input, Label } from "@/components/ui/input";
 export function MachineryForm() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [name, setName] = useState("Tower crane 2");
+  const [name, setName] = useState("塔吊 2#");
   const [code, setCode] = useState(`MC-${Date.now()}`);
-  const [operator, setOperator] = useState("Operator Li");
+  const [operator, setOperator] = useState("李师傅");
   const [nextMaintenanceDate, setNextMaintenanceDate] = useState("2026-06-15");
 
   async function submit() {
@@ -23,10 +23,10 @@ export function MachineryForm() {
     });
     const body = await response.json().catch(() => ({}));
     if (!response.ok || body.ok === false) {
-      toast.error(body.error ?? "Machinery registration failed.");
+      toast.error(body.error ?? "机械登记失败。");
       return;
     }
-    toast.success("Machinery registered.");
+    toast.success("机械已登记。");
     startTransition(() => router.push(`/machinery/${body.data.id}`));
   }
 
@@ -34,25 +34,25 @@ export function MachineryForm() {
     <Card>
       <CardHeader>
         <div>
-          <CardTitle>Machinery entry registration</CardTitle>
-          <CardDescription>Register equipment, operator, and the next maintenance date.</CardDescription>
+          <CardTitle>机械进场登记</CardTitle>
+          <CardDescription>登记设备信息、操作人员和下次保养日期。</CardDescription>
         </div>
       </CardHeader>
       <div className="grid gap-4 md:grid-cols-2">
         <div>
-          <Label htmlFor="machinery-name">Equipment name</Label>
+          <Label htmlFor="machinery-name">设备名称</Label>
           <Input id="machinery-name" value={name} onChange={(event) => setName(event.target.value)} />
         </div>
         <div>
-          <Label htmlFor="machinery-code">Equipment code</Label>
+          <Label htmlFor="machinery-code">设备编号</Label>
           <Input id="machinery-code" value={code} onChange={(event) => setCode(event.target.value)} />
         </div>
         <div>
-          <Label htmlFor="machinery-operator">Operator</Label>
+          <Label htmlFor="machinery-operator">操作人员</Label>
           <Input id="machinery-operator" value={operator} onChange={(event) => setOperator(event.target.value)} />
         </div>
         <div>
-          <Label htmlFor="machinery-next-maintenance">Next maintenance</Label>
+          <Label htmlFor="machinery-next-maintenance">下次保养日期</Label>
           <Input
             id="machinery-next-maintenance"
             type="date"
@@ -63,7 +63,7 @@ export function MachineryForm() {
       </div>
       <div className="mt-6 flex justify-end">
         <Button type="button" onClick={submit} disabled={isPending || !name.trim() || !code.trim()}>
-          {isPending ? "Submitting..." : "Submit registration"}
+          {isPending ? "提交中..." : "提交登记"}
         </Button>
       </div>
     </Card>

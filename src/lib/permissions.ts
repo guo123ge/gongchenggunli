@@ -1,13 +1,13 @@
 import type { ModuleKey, ProjectRole } from "@/types/enums";
 
 const moduleAccess: Record<ProjectRole, ModuleKey[]> = {
-  PM: ["dashboard", "daily-log", "material", "machinery", "safety", "archive", "change-visa", "review"],
-  CON: ["dashboard", "daily-log", "material", "safety"],
-  TECH: ["dashboard", "daily-log", "archive", "change-visa"],
-  SAFE: ["dashboard", "daily-log", "safety", "review"],
-  MAT: ["dashboard", "material", "daily-log"],
-  DOC: ["dashboard", "archive", "daily-log", "change-visa"],
-  MACH: ["dashboard", "machinery", "daily-log"],
+  PM: ["dashboard", "project", "documents", "daily-log", "material", "machinery", "safety", "archive", "change-visa", "review"],
+  CON: ["dashboard", "documents", "daily-log", "material", "safety"],
+  TECH: ["dashboard", "documents", "daily-log", "archive", "change-visa"],
+  SAFE: ["dashboard", "documents", "daily-log", "safety", "review"],
+  MAT: ["dashboard", "documents", "material", "daily-log"],
+  DOC: ["dashboard", "documents", "archive", "daily-log", "change-visa"],
+  MACH: ["dashboard", "documents", "machinery", "daily-log"],
 };
 
 export function canView(module: ModuleKey, role: ProjectRole) {
@@ -23,4 +23,3 @@ export function canEdit(module: ModuleKey, role: ProjectRole) {
 export function canReview(role: ProjectRole) {
   return role === "PM";
 }
-

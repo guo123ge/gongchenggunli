@@ -22,4 +22,3 @@ export function StatusBadge({ status, className }: { status: ReviewStatus; class
     </span>
   );
 }
-

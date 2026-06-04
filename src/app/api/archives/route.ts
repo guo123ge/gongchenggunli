@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
+import { readAppData } from "@/lib/app-data";
 import { isPrismaBackendEnabled } from "@/lib/data-backend";
 import { createPrismaArchive, getPrismaArchives } from "@/lib/prisma-repository";
-import { readStore, updateStore } from "@/lib/server-store";
+import { updateStore } from "@/lib/server-store";
 import type { ArchiveRecord } from "@/types";
 
 export async function GET() {
   if (isPrismaBackendEnabled()) return NextResponse.json({ ok: true, data: await getPrismaArchives() });
-  const data = await readStore();
+  const data = await readAppData();
   return NextResponse.json({ ok: true, data: data.archives });
 }
 
@@ -19,12 +20,13 @@ export async function POST(request: Request) {
   const created = await updateStore((data) => {
     const item: ArchiveRecord = {
       id: crypto.randomUUID(),
+      projectId: data.project.id,
       title: String(body.title ?? "未命名档案"),
       category: String(body.category ?? "其他"),
       tags: Array.isArray(body.tags) ? body.tags : String(body.tags ?? "").split(",").filter(Boolean),
       version: String(body.version ?? "v1.0"),
       status: body.status ?? "submitted",
-      submittedBy: String(body.submittedBy ?? "宋资料"),
+      submittedBy: String(body.submittedBy ?? "资料员"),
       createdAt: new Date().toLocaleString("zh-CN"),
     };
     data.archives.unshift(item);

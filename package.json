@@ -20,15 +20,18 @@
     "verify:pages": "node scripts/verify-page-store-binding.mjs",
     "verify:reports": "node scripts/verify-report-export-workflow.mjs",
     "verify:registration": "node scripts/verify-registration-workflow.mjs",
-    "verify:notifications": "node scripts/verify-notification-workflow.mjs"
+    "verify:notifications": "node scripts/verify-notification-workflow.mjs",
+    "verify:ai": "node scripts/verify-ai-fallback-workflow.mjs"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",
     "@hookform/resolvers": "^5.4.0",
     "@prisma/client": "6.19.0",
     "@tanstack/react-query": "^5.100.14",
+    "@vercel/blob": "^2.4.0",
     "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",
+    "cos-nodejs-sdk-v5": "^2.15.4",
     "date-fns": "^4.4.0",
     "dexie": "^4.4.3",
     "lucide-react": "^1.17.0",

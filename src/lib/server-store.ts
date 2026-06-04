@@ -17,10 +17,12 @@ import type {
   ChangeRecord,
   DailyLog,
   DashboardSummary,
+  DocumentRecord,
   Hazard,
   Machinery,
   MaintenanceRecord,
   Material,
+  Project,
   RegistrationRequest,
   ReviewItem,
   SafetyIncident,
@@ -30,7 +32,8 @@ import type {
 } from "@/types";
 
 export type StoreData = {
-  project: typeof project;
+  project: Project;
+  projects: Project[];
   registrationRequests: RegistrationRequest[];
   dailyLogs: DailyLog[];
   materials: Material[];
@@ -43,6 +46,7 @@ export type StoreData = {
   shiftRecords: ShiftRecord[];
   reviewItems: ReviewItem[];
   archiveFiles: ArchiveFile[];
+  documents: DocumentRecord[];
   archives: ArchiveRecord[];
   changes: ChangeRecord[];
   visas: VisaRecord[];
@@ -55,6 +59,7 @@ let storeUpdateQueue: Promise<unknown> = Promise.resolve();
 
 const initialData: StoreData = {
   project,
+  projects: [project],
   registrationRequests: [],
   dailyLogs,
   materials,
@@ -65,12 +70,12 @@ const initialData: StoreData = {
     {
       id: "inc-001",
       projectId: project.id,
-      title: "Sample safety incident",
+      title: "示例安全事件",
       incidentDate: "2026-05-30",
       level: "medium",
-      description: "Initial incident record used to prove the safety incident workflow is wired to persistence.",
+      description: "用于验证安全事件流程已接入持久化存储。",
       status: "submitted",
-      submittedBy: "Safety Officer",
+      submittedBy: "安全员",
     },
   ],
   machinery,
@@ -78,9 +83,9 @@ const initialData: StoreData = {
     {
       id: "mt-001",
       machineryId: machinery[0]?.id ?? "mc-001",
-      content: "Monthly maintenance",
+      content: "月度保养",
       cost: 1200,
-      handledBy: "Machinery Lead",
+      handledBy: "机械管理员",
       createdAt: "2026-05-31 09:00",
     },
   ],
@@ -90,8 +95,8 @@ const initialData: StoreData = {
       machineryId: machinery[0]?.id ?? "mc-001",
       workDate: "2026-05-31",
       shiftHours: 8,
-      workContent: "Material lifting",
-      submittedBy: "Machinery Lead",
+      workContent: "材料吊运作业",
+      submittedBy: "机械管理员",
     },
   ],
   reviewItems,
@@ -153,6 +158,7 @@ const initialData: StoreData = {
       uploadedAt: "2026-05-31 18:00",
     },
   ],
+  documents: [],
 };
 
 async function ensureStoreFile() {
@@ -173,6 +179,7 @@ async function readStoreFile(): Promise<StoreData> {
   const raw = await readFile(dataFile, "utf8");
   const data = JSON.parse(raw) as StoreData;
   data.archiveFiles ??= initialData.archiveFiles;
+  data.documents ??= initialData.documents;
   data.archives ??= initialData.archives;
   data.changes ??= initialData.changes;
   data.visas ??= initialData.visas;
@@ -180,7 +187,29 @@ async function readStoreFile(): Promise<StoreData> {
   data.maintenanceRecords ??= initialData.maintenanceRecords;
   data.shiftRecords ??= initialData.shiftRecords;
   data.registrationRequests ??= initialData.registrationRequests;
+  data.projects ??= [data.project ?? initialData.project];
+  data.project ??= data.projects[0] ?? initialData.project;
+  normalizeStoreData(data);
   return data;
+}
+
+function normalizeStoreData(data: StoreData) {
+  const fallbackProjectId = data.projects.at(-1)?.id ?? data.project.id;
+  data.hazards.forEach((item) => {
+    item.projectId ??= fallbackProjectId;
+  });
+  data.machinery.forEach((item) => {
+    item.projectId ??= fallbackProjectId;
+  });
+  data.archives.forEach((item) => {
+    item.projectId ??= fallbackProjectId;
+  });
+  data.changes.forEach((item) => {
+    item.projectId ??= fallbackProjectId;
+  });
+  data.visas.forEach((item) => {
+    item.projectId ??= fallbackProjectId;
+  });
 }
 
 export async function writeStore(data: StoreData) {

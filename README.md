@@ -1,28 +1,30 @@
 # 施工现场综合管理平台
 
-根据 `C:\Users\Administrator\Desktop\施工现场综合管理平台\2026-05-31_construction-site-platform-build-plan.md` 创建的 Next.js 项目。
+基于 Next.js 14 的施工现场管理系统，覆盖施工日志、材料、机械、安全、档案、变更签证与审核中心。
 
-## 已落地能力
+## 已实现能力
 
-- 六大模块：施工日志、材料、机械、安全、档案、变更签证。
-- Phase 1 闭环：仪表盘、施工日志录入/详情/审核、材料入库/出库/库存预警、审核中心。
-- 多角色/RBAC 基础：PM、施工员、技术、安全、材料、资料、机械管理员。
-- PWA/离线基础：manifest、service worker、Dexie 草稿和同步队列。
-- AI 扩展位：OCR、安全风险识别、语音转写、AI Chat + RAG 检索。
-- 报表导出：施工日志汇总、材料台账、CSV 导出。
+- 业务模块：施工日志、材料管理、机械管理、安全管理、档案管理、变更签证、审核中心。
+- 审核闭环：提交、通过、驳回、退回修改。
+- 角色体系：`PM`、`CON`、`TECH`、`SAFE`、`MAT`、`DOC`、`MACH`。
+- 中文角色：项目经理、施工员、技术负责人、安全员、材料员、资料员、机械管理员。
+- 智能能力：单据识别、安全风险识别、语音转写、项目知识检索。
+- 上传能力：默认本地 `uploads/`，正式环境可切换到对象存储或 Blob。
+- 数据后端：本地默认 JSON，正式环境推荐 Prisma + PostgreSQL。
 
-## 运行
+## 本地预览
 
 ```bash
 npm.cmd install
 npx.cmd prisma generate
-npm.cmd run dev
+npm.cmd run build
+npm.cmd run start -- -p 3000
 ```
 
-默认访问：
+本地入口：
 
 ```text
-http://localhost:3000/dashboard
+http://127.0.0.1:3000/login?callbackUrl=%2Fdashboard
 ```
 
 演示账号：
@@ -30,42 +32,62 @@ http://localhost:3000/dashboard
 ```text
 pm / 123456
 con / 123456
-mat / 123456
+tech / 123456
 safe / 123456
+mat / 123456
+doc / 123456
+mach / 123456
 ```
 
-## 验证
+## 腾讯云正式域名
+
+- 主域名：`guo123guo.cn`
+- 云厂商：腾讯云
+- 实名认证：已完成
+- ICP 备案：审核中
+- 备用域名：暂不启用
+
+备案通过后的正式入口：
+
+```text
+https://guo123guo.cn/login?callbackUrl=%2Fdashboard
+```
+
+健康检查：
+
+```text
+https://guo123guo.cn/api/health
+```
+
+## 正式环境变量
+
+```env
+NEXTAUTH_URL="https://guo123guo.cn"
+PUBLIC_PRIMARY_DOMAIN="https://guo123guo.cn"
+PUBLIC_SECONDARY_DOMAIN=""
+DATA_BACKEND="prisma"
+DATABASE_URL="postgresql://正式数据库账号:正式数据库密码@正式数据库地址:5432/construction_site"
+NEXTAUTH_SECRET="生产环境高强度随机密钥"
+UPLOAD_DIR="./uploads"
+BLOB_READ_WRITE_TOKEN=""
+BLOB_PUBLIC_URL=""
+```
+
+## 国内浏览器兼容目标
+
+- 手机端：微信内置浏览器、QQ 浏览器、华为浏览器、夸克、UC、360 手机浏览器。
+- 电脑端：Chrome、Edge、360 安全浏览器、QQ 浏览器。
+- 重点验证：登录回调、会话保持、上传下载、审核流、智能功能回退。
+
+## 验证命令
 
 ```bash
 npm.cmd run lint
 npm.cmd run build
+npm.cmd run verify:phase1
+npm.cmd run verify:extended
+npm.cmd run verify:ai
 ```
 
-当前项目使用 Next.js 14.2.32、React 18.3.1、Prisma 6.19.0，以匹配计划书中的 Next 14 架构并避开当前 Windows 环境下 Next 16/SWC 的兼容问题。
-
-## 数据库模式
-
-默认 `DATA_BACKEND=json`，使用 `.local-data/store.json` 作为本地可运行数据层。
-
-如果本机安装了 Docker/PostgreSQL，可切换到 Prisma/PostgreSQL：
-
-```bash
-docker compose up -d postgres
-npm.cmd run db:prepare
-```
-
-然后把 `.env.local` 改为：
-
-```env
-DATA_BACKEND="prisma"
-```
-
-可用以下命令验证数据库模式：
-
-```bash
-npm.cmd run verify:prisma
-```
-
-`db:prepare` 会依次执行 Prisma generate、migrate deploy、seed 和 `verify:prisma`。
-如果本机没有 PostgreSQL 或 Docker，会看到 `POSTGRES_UNAVAILABLE`。这表示代码已进入 Prisma 连接阶段，但数据库服务尚未启动。
-详细步骤见 `docs/prisma-postgres-runbook.md`。
+腾讯云发布说明见 [domain-dual-active-cn.md](/D:/construction-site-platform/docs/domain-dual-active-cn.md)。
+Prisma 模式切换见 [prisma-postgres-runbook.md](/D:/construction-site-platform/docs/prisma-postgres-runbook.md)。

@@ -20,12 +20,12 @@ export async function POST(request: Request) {
     const item: SafetyIncident = {
       id: crypto.randomUUID(),
       projectId: String(body.projectId ?? data.project.id),
-      title: String(body.title ?? "Untitled safety incident"),
+      title: String(body.title ?? "未命名安全事件"),
       incidentDate: String(body.incidentDate ?? new Date().toISOString().slice(0, 10)),
       level: body.level ?? body.riskLevel ?? "medium",
-      description: String(body.description ?? body.title ?? "Pending incident description"),
+      description: String(body.description ?? body.title ?? "待补充事件描述"),
       status: body.status ?? "submitted",
-      submittedBy: String(body.submittedBy ?? "Safety Officer"),
+      submittedBy: String(body.submittedBy ?? "安全员"),
     };
     data.incidents.unshift(item);
     return item;

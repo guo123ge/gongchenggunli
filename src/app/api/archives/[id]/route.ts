@@ -17,7 +17,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const body = await request.json().catch(() => ({}));
   if (isPrismaBackendEnabled()) {
     const updated = await updatePrismaArchive(id, body);
-    if (!updated) return NextResponse.json({ ok: false, error: "Archive does not exist" }, { status: 404 });
+    if (!updated) return NextResponse.json({ ok: false, error: "档案不存在" }, { status: 404 });
     return NextResponse.json({ ok: true, data: updated });
   }
   const updated = await updateStore((data) => {

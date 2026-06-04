@@ -16,17 +16,17 @@ export default async function ArchivePage() {
     <div className="space-y-6">
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-3xl font-black text-white">Archive management</h1>
-          <p className="mt-2 text-muted">Categories, full-text search, versions, and online previews.</p>
+          <h1 className="text-3xl font-black text-white">档案管理</h1>
+          <p className="mt-2 text-muted">支持分类、检索、版本留痕与在线预览。</p>
         </div>
-        <Link href="/archive/new"><Button>Upload archive</Button></Link>
+        <Link href="/archive/new"><Button>上传档案</Button></Link>
       </div>
 
       <Card>
         <CardHeader>
           <div>
-            <CardTitle>Persisted archive records</CardTitle>
-            <CardDescription>Records submitted through the archive API are listed here.</CardDescription>
+            <CardTitle>档案记录</CardTitle>
+            <CardDescription>通过档案接口提交的记录会展示在此。</CardDescription>
           </div>
         </CardHeader>
         <div className="space-y-3">
@@ -47,13 +47,13 @@ export default async function ArchivePage() {
               </div>
             </Link>
           ))}
-          {data.archives.length === 0 && <p className="text-sm text-muted">No archive records yet.</p>}
+          {data.archives.length === 0 && <p className="text-sm text-muted">暂无档案记录。</p>}
         </div>
       </Card>
 
       <div className="grid gap-6 xl:grid-cols-2">
-        <Card><CardHeader><div><CardTitle>Archive preview</CardTitle><CardDescription>Preview PDF and image files online.</CardDescription></div></CardHeader><FilePreview /></Card>
-        <Card><CardHeader><div><CardTitle>Version history</CardTitle><CardDescription>Keep every archive version traceable.</CardDescription></div></CardHeader><VersionList /></Card>
+        <Card><CardHeader><div><CardTitle>档案预览</CardTitle><CardDescription>支持文档与图片在线预览。</CardDescription></div></CardHeader><FilePreview /></Card>
+        <Card><CardHeader><div><CardTitle>版本历史</CardTitle><CardDescription>保留每次版本变更记录。</CardDescription></div></CardHeader><VersionList /></Card>
       </div>
       <ArchiveChecker />
     </div>

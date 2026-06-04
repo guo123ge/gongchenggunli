@@ -11,7 +11,7 @@ import { Input, Label } from "@/components/ui/input";
 export default function RegisterPage() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [displayName, setDisplayName] = useState("New Site Member");
+  const [displayName, setDisplayName] = useState("新成员");
   const [phone, setPhone] = useState("13900000000");
   const [username, setUsername] = useState(`user${Date.now()}`);
 
@@ -24,10 +24,10 @@ export default function RegisterPage() {
     });
     const body = await response.json().catch(() => ({}));
     if (!response.ok || body.ok === false) {
-      toast.error(body.error ?? "Registration failed.");
+      toast.error(body.error ?? "注册失败。");
       return;
     }
-    toast.success(body.data?.message ?? "Registration request submitted.");
+    toast.success(body.data?.message ?? "注册申请已提交。");
     startTransition(() => router.push("/login"));
   }
 
@@ -36,28 +36,28 @@ export default function RegisterPage() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <div>
-            <CardTitle>Register project member</CardTitle>
-            <CardDescription>Create a pending account request for PM role assignment.</CardDescription>
+            <CardTitle>项目成员注册</CardTitle>
+            <CardDescription>提交账号申请后，由项目经理在审核中心分配角色。</CardDescription>
           </div>
         </CardHeader>
         <form className="space-y-4" onSubmit={submit}>
           <div>
-            <Label htmlFor="register-display-name">Name</Label>
+            <Label htmlFor="register-display-name">姓名</Label>
             <Input id="register-display-name" value={displayName} onChange={(event) => setDisplayName(event.target.value)} />
           </div>
           <div>
-            <Label htmlFor="register-phone">Phone</Label>
+            <Label htmlFor="register-phone">手机号</Label>
             <Input id="register-phone" value={phone} onChange={(event) => setPhone(event.target.value)} />
           </div>
           <div>
-            <Label htmlFor="register-username">Username</Label>
+            <Label htmlFor="register-username">账号</Label>
             <Input id="register-username" value={username} onChange={(event) => setUsername(event.target.value)} />
           </div>
           <Button type="submit" className="w-full" disabled={isPending || !displayName.trim() || !phone.trim() || !username.trim()}>
-            {isPending ? "Submitting..." : "Submit registration"}
+            {isPending ? "提交中..." : "提交注册"}
           </Button>
           <Link href="/login" className="block text-center text-sm text-brand">
-            Already have an account? Sign in
+            已有账号，去登录
           </Link>
         </form>
       </Card>

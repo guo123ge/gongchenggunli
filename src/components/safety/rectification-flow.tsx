@@ -4,11 +4,10 @@ export function RectificationFlow() {
     <div className="grid gap-3 md:grid-cols-5">
       {steps.map((step, index) => (
         <div key={step} className="rounded-2xl border border-border bg-panel-soft p-3">
-          <p className="text-xs text-brand">Step {index + 1}</p>
+          <p className="text-xs text-brand">第 {index + 1} 步</p>
           <p className="mt-1 font-semibold text-white">{step}</p>
         </div>
       ))}
     </div>
   );
 }
-

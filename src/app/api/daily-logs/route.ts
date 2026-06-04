@@ -21,7 +21,7 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
   const parsed = dailyLogSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ ok: false, error: "施工日志校验失败", details: parsed.error.flatten() }, { status: 422 });
+    return NextResponse.json({ ok: false, error: "施工日志校验失败。", details: parsed.error.flatten() }, { status: 422 });
   }
   if (isPrismaBackendEnabled()) {
     const created = await createPrismaDailyLog(parsed.data);
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
       safetyCheck: parsed.data.safetyCheck,
       status: parsed.data.status,
       submittedBy: "当前用户",
-      attachments: [],
+      attachments: Array.isArray(body.attachments) ? body.attachments : [],
     };
     data.dailyLogs.unshift(item);
     if (item.status === "submitted") {

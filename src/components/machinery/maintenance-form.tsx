@@ -9,7 +9,7 @@ import { Input, Label, Textarea } from "@/components/ui/input";
 export function MaintenanceForm({ machineryId }: { machineryId: string }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [content, setContent] = useState("Monthly maintenance");
+  const [content, setContent] = useState("月度保养");
   const [cost, setCost] = useState("1200");
 
   async function submit() {
@@ -20,26 +20,26 @@ export function MaintenanceForm({ machineryId }: { machineryId: string }) {
     });
     const body = await response.json().catch(() => ({}));
     if (!response.ok || body.ok === false) {
-      toast.error(body.error ?? "Maintenance submission failed.");
+      toast.error(body.error ?? "保养记录提交失败。");
       return;
     }
-    toast.success("Maintenance record saved.");
+    toast.success("保养记录已保存。");
     startTransition(() => router.refresh());
   }
 
   return (
     <div className="grid gap-3">
       <div>
-        <Label>Maintenance content</Label>
+        <Label>保养内容</Label>
         <Textarea value={content} onChange={(event) => setContent(event.target.value)} />
       </div>
       <div>
-        <Label>Cost</Label>
+        <Label>费用</Label>
         <Input type="number" value={cost} onChange={(event) => setCost(event.target.value)} />
       </div>
       <div className="flex justify-end">
         <Button type="button" onClick={submit} disabled={isPending || !content.trim()}>
-          {isPending ? "Saving..." : "Save maintenance"}
+          {isPending ? "保存中..." : "保存保养记录"}
         </Button>
       </div>
     </div>

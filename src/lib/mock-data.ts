@@ -205,7 +205,7 @@ export const machinery: Machinery[] = [
     name: "塔吊 1#",
     code: "TC6015-01",
     operator: "张师傅",
-    status: "onsite",
+    status: "submitted",
     nextMaintenanceDate: "2026-06-05",
     shiftsThisMonth: 21,
   },
@@ -214,7 +214,7 @@ export const machinery: Machinery[] = [
     name: "汽车泵",
     code: "SY5418THB",
     operator: "王师傅",
-    status: "maintenance",
+    status: "approved",
     nextMaintenanceDate: "2026-06-01",
     shiftsThisMonth: 12,
   },
@@ -265,4 +265,3 @@ export function findDailyLog(id: string) {
 export function findMaterial(id: string) {
   return materials.find((item) => item.id === id);
 }
-

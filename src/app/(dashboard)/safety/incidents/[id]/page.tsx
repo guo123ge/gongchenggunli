@@ -38,15 +38,15 @@ export default async function IncidentDetailPage({ params }: { params: Promise<{
       <Card>
         <CardHeader>
           <div>
-            <CardTitle>Incident workflow</CardTitle>
-            <CardDescription>Submission, review status, replay notes, and archive handoff.</CardDescription>
+            <CardTitle>事件流转</CardTitle>
+            <CardDescription>展示提交、审核、复盘备注与归档衔接状态。</CardDescription>
           </div>
         </CardHeader>
         <div className="grid gap-3 md:grid-cols-3">
           {[
-            ["Submitted by", incident.submittedBy],
-            ["Reviewed by", incident.reviewedBy ?? "Pending"],
-            ["Review note", incident.reviewComment ?? "No review note yet"],
+            ["提交人", incident.submittedBy],
+            ["审核人", incident.reviewedBy ?? "待审核"],
+            ["审核备注", incident.reviewComment ?? "暂无审核备注"],
           ].map(([label, value]) => (
             <div key={label} className="rounded-2xl border border-border bg-panel/50 p-4">
               <p className="text-xs uppercase tracking-[0.18em] text-muted">{label}</p>

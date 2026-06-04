@@ -40,7 +40,7 @@ export function MaterialSelector({ onSelect }: { onSelect?: (id: string) => void
 
   return (
     <div>
-      <Label>Select material</Label>
+      <Label>选择材料</Label>
       <select
         value={selected}
         disabled={isLoading || materials.length === 0}
@@ -50,15 +50,15 @@ export function MaterialSelector({ onSelect }: { onSelect?: (id: string) => void
         }}
         className="h-11 w-full rounded-xl border border-border bg-panel px-3 text-sm outline-none focus:border-brand disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {isLoading && <option value="">Loading materials...</option>}
-        {!isLoading && materials.length === 0 && <option value="">No materials available</option>}
+        {isLoading && <option value="">正在加载材料...</option>}
+        {!isLoading && materials.length === 0 && <option value="">暂无可选材料</option>}
         {materials.map((item) => (
           <option key={item.id} value={item.id}>
-            {item.name} / {item.spec} / stock {item.currentStock} {item.unit}
+            {item.name} / {item.spec} / 库存 {item.currentStock} {item.unit}
           </option>
         ))}
       </select>
-      <Input className="mt-3" placeholder="Search by material name, spec, or category" />
+      <Input className="mt-3" placeholder="按材料名称、规格或分类搜索" />
     </div>
   );
 }

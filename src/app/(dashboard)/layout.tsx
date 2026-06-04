@@ -1,7 +1,7 @@
+import { AiChatPanel } from "@/components/ai/ai-chat-panel";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
-import { AiChatPanel } from "@/components/ai/ai-chat-panel";
 import { auth } from "@/lib/auth";
 import { readAppData } from "@/lib/app-data";
 import { calculateDashboardSummary } from "@/lib/server-store";
@@ -10,7 +10,7 @@ import type { ProjectRole } from "@/types/enums";
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [session, data] = await Promise.all([auth(), readAppData()]);
   const currentUser = {
-    displayName: session?.user?.name ?? "Demo User",
+    displayName: session?.user?.name ?? "演示用户",
     role: (session?.user?.role ?? "CON") as ProjectRole,
   };
   const summary = calculateDashboardSummary(data);

@@ -9,7 +9,7 @@ export async function POST(request: Request) {
   const username = String(body.username ?? phone).trim();
 
   if (!displayName || !phone || !username) {
-    return NextResponse.json({ ok: false, error: "Name, phone, and username are required." }, { status: 422 });
+    return NextResponse.json({ ok: false, error: "姓名、手机号和账号不能为空。" }, { status: 422 });
   }
 
   const created = await updateStore((data) => {
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     ok: true,
     data: {
       ...created,
-      message: "Registration request submitted. A PM can assign the project role next.",
+      message: "注册申请已提交，项目经理可在审核中心分配项目角色。",
     },
   });
 }

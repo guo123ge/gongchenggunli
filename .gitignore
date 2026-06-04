@@ -31,8 +31,13 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+.lt.*.log
+.lt.pid
+.next-dev.*.log
+.preview.*.log
 .next-start.*.log
 .next-start.*.pid
+.next-start.pid
 
 # env files (can opt-in for committing if needed)
 .env*

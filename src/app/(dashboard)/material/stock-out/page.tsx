@@ -12,7 +12,7 @@ export default async function StockOutPage() {
       <div className="flex items-end justify-between">
         <div>
           <h1 className="text-3xl font-black text-white">出库列表</h1>
-          <p className="mt-2 text-muted">领料出库、库存校验、审核后扣减库存。</p>
+          <p className="mt-2 text-muted">记录领料出库、库存校验与审核扣减流程。</p>
         </div>
         <Link href="/material/stock-out/new"><Button>新建出库</Button></Link>
       </div>

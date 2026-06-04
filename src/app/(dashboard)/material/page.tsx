@@ -12,7 +12,7 @@ export default async function MaterialPage() {
     <div className="space-y-6">
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
-          <p className="text-sm uppercase tracking-[0.24em] text-brand">Material</p>
+          <p className="text-sm uppercase tracking-[0.24em] text-brand">材料管理</p>
           <h1 className="mt-2 text-3xl font-black text-white">材料管理</h1>
           <p className="mt-2 text-muted">实时库存、低库存预警、入库/出库审核闭环。</p>
         </div>

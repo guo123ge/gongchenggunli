@@ -17,7 +17,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const body = await request.json().catch(() => ({}));
   if (isPrismaBackendEnabled()) {
     const updated = await updatePrismaMachinery(id, body);
-    if (!updated) return NextResponse.json({ ok: false, error: "Machinery does not exist" }, { status: 404 });
+    if (!updated) return NextResponse.json({ ok: false, error: "机械不存在" }, { status: 404 });
     return NextResponse.json({ ok: true, data: updated });
   }
   const updated = await updateStore((data) => {

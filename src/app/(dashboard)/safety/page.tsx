@@ -16,37 +16,62 @@ export default async function SafetyPage() {
     <div className="space-y-6">
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
-          <p className="text-sm uppercase tracking-[0.24em] text-brand">Safety</p>
+          <p className="text-sm uppercase tracking-[0.24em] text-brand">安全管理</p>
           <h1 className="mt-2 text-3xl font-black text-white">安全管理</h1>
-          <p className="mt-2 text-muted">隐患上报、整改闭环、JGJ59 检查表和风险热力图。</p>
+          <p className="mt-2 text-muted">隐患上报、整改闭环、检查表和风险热力图统一管理。</p>
         </div>
-        <Link href="/safety/hazards/new"><Button>上报隐患</Button></Link>
+        <Link href="/safety/hazards/new">
+          <Button>上报隐患</Button>
+        </Link>
       </div>
       <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
         <Card>
-          <CardHeader><div><CardTitle>隐患列表</CardTitle><CardDescription>按红/橙/黄风险标识展示</CardDescription></div></CardHeader>
+          <CardHeader>
+            <div>
+              <CardTitle>隐患列表</CardTitle>
+              <CardDescription>点击隐患可进入详情，继续查看整改、审核和返回入口。</CardDescription>
+            </div>
+          </CardHeader>
           <div className="space-y-3">
             {data.hazards.map((item) => (
-              <div key={item.id} className="flex items-center justify-between rounded-2xl border border-border bg-panel/60 p-4">
+              <Link key={item.id} href={`/safety/hazards/${item.id}`} className="flex items-center justify-between rounded-2xl border border-border bg-panel/60 p-4 transition hover:border-brand/60">
                 <div>
                   <p className="font-semibold text-white">{item.title}</p>
-                  <p className="mt-1 text-xs text-muted">{item.area} · {item.owner} · {item.dueDate}</p>
+                  <p className="mt-1 text-xs text-muted">
+                    {item.area} / {item.owner} / {item.dueDate}
+                  </p>
                 </div>
                 <RiskBadge level={item.riskLevel} />
-              </div>
+              </Link>
             ))}
+            {data.hazards.length === 0 && <p className="rounded-2xl border border-dashed border-border p-4 text-sm text-muted">当前项目暂无安全隐患记录。</p>}
           </div>
         </Card>
         <Card>
-          <CardHeader><div><CardTitle>整改流</CardTitle><CardDescription>通知下发、回复、复查和关闭</CardDescription></div></CardHeader>
+          <CardHeader>
+            <div>
+              <CardTitle>整改流程</CardTitle>
+              <CardDescription>通知下发、整改回复、复查和关闭。</CardDescription>
+            </div>
+          </CardHeader>
           <RectificationFlow />
         </Card>
         <Card>
-          <CardHeader><div><CardTitle>JGJ59 检查表</CardTitle><CardDescription>高频检查项模板</CardDescription></div></CardHeader>
+          <CardHeader>
+            <div>
+              <CardTitle>JGJ59 检查表</CardTitle>
+              <CardDescription>高频检查项模板。</CardDescription>
+            </div>
+          </CardHeader>
           <Checklist />
         </Card>
         <Card>
-          <CardHeader><div><CardTitle>风险热力图</CardTitle><CardDescription>按施工区域聚合隐患</CardDescription></div></CardHeader>
+          <CardHeader>
+            <div>
+              <CardTitle>风险热力图</CardTitle>
+              <CardDescription>按施工区域聚合隐患。</CardDescription>
+            </div>
+          </CardHeader>
           <Heatmap />
         </Card>
       </div>

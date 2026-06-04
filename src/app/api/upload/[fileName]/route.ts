@@ -1,42 +1,39 @@
-import { createReadStream } from "node:fs";
-import { stat } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { Readable } from "node:stream";
 import { NextResponse } from "next/server";
-
-const contentTypes: Record<string, string> = {
-  ".jpg": "image/jpeg",
-  ".jpeg": "image/jpeg",
-  ".png": "image/png",
-  ".webp": "image/webp",
-  ".gif": "image/gif",
-  ".pdf": "application/pdf",
-  ".txt": "text/plain; charset=utf-8",
-  ".csv": "text/csv; charset=utf-8",
-};
 
 export async function GET(_request: Request, { params }: { params: Promise<{ fileName: string }> }) {
   const { fileName } = await params;
-  const uploadDir = path.resolve(process.cwd(), "uploads");
-  const filePath = path.resolve(uploadDir, fileName);
+  const uploadDir = path.resolve(process.cwd(), process.env.UPLOAD_DIR ?? "uploads");
+  const safeName = path.basename(decodeURIComponent(fileName));
+  const filePath = path.join(uploadDir, safeName);
 
-  if (!filePath.startsWith(uploadDir + path.sep)) {
-    return NextResponse.json({ ok: false, error: "非法文件路径" }, { status: 400 });
+  if (!filePath.startsWith(uploadDir)) {
+    return NextResponse.json({ ok: false, error: "文件路径无效。" }, { status: 400 });
   }
 
   try {
-    const info = await stat(filePath);
-    const stream = Readable.toWeb(createReadStream(filePath)) as ReadableStream;
-    const ext = path.extname(fileName).toLowerCase();
-    return new Response(stream, {
+    const file = await readFile(filePath);
+    return new Response(file, {
       headers: {
-        "Content-Type": contentTypes[ext] ?? "application/octet-stream",
-        "Content-Length": String(info.size),
-        "Content-Disposition": `inline; filename*=UTF-8''${encodeURIComponent(fileName)}`,
+        "Content-Type": getContentType(safeName),
+        "Cache-Control": "public, max-age=31536000, immutable",
       },
     });
   } catch {
-    return NextResponse.json({ ok: false, error: "文件不存在" }, { status: 404 });
+    return NextResponse.json({ ok: false, error: "文件不存在或已被删除。" }, { status: 404 });
   }
 }
 
+function getContentType(fileName: string) {
+  const lower = fileName.toLowerCase();
+  if (lower.endsWith(".png")) return "image/png";
+  if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) return "image/jpeg";
+  if (lower.endsWith(".webp")) return "image/webp";
+  if (lower.endsWith(".pdf")) return "application/pdf";
+  if (lower.endsWith(".doc")) return "application/msword";
+  if (lower.endsWith(".docx")) return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+  if (lower.endsWith(".xls")) return "application/vnd.ms-excel";
+  if (lower.endsWith(".xlsx")) return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+  return "application/octet-stream";
+}

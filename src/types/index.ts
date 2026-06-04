@@ -51,6 +51,35 @@ export type ArchiveFile = {
   uploadedAt: string;
 };
 
+export type DocumentRecord = {
+  id: string;
+  projectId: string;
+  module: ModuleKey;
+  title: string;
+  fileName: string;
+  fileType: string;
+  fileSize: number;
+  url: string;
+  storageProvider: "local" | "tencent-cos" | "vercel-blob";
+  submittedBy: string;
+  submittedRole: ProjectRole;
+  reviewStatus: ReviewStatus;
+  aiReviewStatus: "pending" | "passed" | "warning" | "failed";
+  aiSummary?: string;
+  sourceType?: "image" | "audio" | "file";
+  visibilityRoles?: ProjectRole[];
+  accessLogs?: Array<{
+    id: string;
+    action: "view" | "download";
+    userName: string;
+    userRole: ProjectRole;
+    createdAt: string;
+  }>;
+  archivedAt?: string;
+  archivedBy?: string;
+  createdAt: string;
+};
+
 export type DailyLog = {
   id: string;
   projectId: string;
@@ -102,6 +131,7 @@ export type StockRecord = {
 
 export type Hazard = {
   id: string;
+  projectId?: string;
   title: string;
   area: string;
   riskLevel: RiskLevel;
@@ -125,10 +155,11 @@ export type SafetyIncident = {
 
 export type Machinery = {
   id: string;
+  projectId?: string;
   name: string;
   code: string;
   operator: string;
-  status: "onsite" | "maintenance" | "offsite";
+  status: "draft" | "submitted" | "approved" | "rejected";
   nextMaintenanceDate: string;
   shiftsThisMonth: number;
 };
@@ -163,6 +194,7 @@ export type ReviewItem = {
 
 export type ArchiveRecord = {
   id: string;
+  projectId?: string;
   title: string;
   category: string;
   tags: string[];
@@ -174,6 +206,7 @@ export type ArchiveRecord = {
 
 export type ChangeRecord = {
   id: string;
+  projectId?: string;
   title: string;
   reason: string;
   content: string;
@@ -185,6 +218,7 @@ export type ChangeRecord = {
 
 export type VisaRecord = {
   id: string;
+  projectId?: string;
   title: string;
   visaType: string;
   totalAmount: number;
