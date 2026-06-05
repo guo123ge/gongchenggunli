@@ -47,6 +47,7 @@ yarn-error.log*
 /uploads
 /prisma/dev.db
 /.local-data
+/腾讯云信息
 
 # vercel
 .vercel

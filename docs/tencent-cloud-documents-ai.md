@@ -26,13 +26,15 @@
 - `TENCENT_COS_SECRET_ID`
 - `TENCENT_COS_SECRET_KEY`
 - `TENCENT_COS_PUBLIC_BASE_URL`
+- `TENCENT_COS_ACCESS_MODE`
 
-当前版本仍以本地 `uploads/` 为主存储。后续接入腾讯云 COS 时，建议：
+当前版本已经支持腾讯云 COS。若 COS 变量配置完整，上传会直接进入 COS；若变量缺失，会自动回退本地 `uploads/`。
 
 1. 保留现有 `/api/upload` 接口不变。
-2. 在接口内部把本地写文件替换为 COS 上传。
-3. 上传成功后继续返回统一的资料记录结构。
-4. `storageProvider` 自动切换为 `tencent-cos`。
+2. 上传成功后继续返回统一的资料记录结构。
+3. `storageProvider` 自动切换为 `tencent-cos`。
+4. 私有桶模式下，资料库保存 `/api/storage/cos/...` 站内地址。
+5. 用户打开资料时，服务器生成临时签名链接后跳转到 COS。
 
 这样前端页面、资料库、智能助手都无需大改。
 

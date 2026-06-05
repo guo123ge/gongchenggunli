@@ -14,7 +14,10 @@
   - `www.guo123guo.cn -> 124.221.103.75`
   - `guo123guo.cn -> 124.221.103.75`
 - 端口：`22 / 80 / 443` 已放通
-- 上传存储：先使用服务器本地 `uploads/`
+- 上传存储：优先使用腾讯云 COS 私有桶，本地 `uploads/` 作为回退
+- COS 存储桶：`gongchenggunli-001-1424037473`
+- COS 地域：`ap-shanghai`
+- COS 访问域名：`gongchenggunli-001-1424037473.cos.ap-shanghai.myqcloud.com`
 
 ## 备案状态说明
 
@@ -97,6 +100,12 @@ PUBLIC_SECONDARY_DOMAIN=
 UPLOAD_DIR=/www/gongchenggunli/uploads
 OPENAI_API_KEY=
 DATA_BACKEND=json
+TENCENT_COS_REGION=ap-shanghai
+TENCENT_COS_BUCKET=gongchenggunli-001-1424037473
+TENCENT_COS_PUBLIC_BASE_URL=https://gongchenggunli-001-1424037473.cos.ap-shanghai.myqcloud.com
+TENCENT_COS_ACCESS_MODE=private
+TENCENT_COS_SECRET_ID=请在服务器内填写子用户SecretId
+TENCENT_COS_SECRET_KEY=请在服务器内填写子用户SecretKey
 EOF
 ```
 
@@ -105,6 +114,37 @@ EOF
 ```bash
 mkdir -p /www/gongchenggunli/uploads
 ```
+
+如果启用腾讯云 COS 私有桶，`uploads` 目录仍建议保留作为回退目录。`TENCENT_COS_SECRET_ID` 和 `TENCENT_COS_SECRET_KEY` 只在服务器 `.env.production` 中填写，不要写入 Git 仓库，也不要发给他人。
+
+## 四点一、腾讯云 COS 私有桶设置
+
+当前项目支持 COS 私有桶：
+
+- 上传文件直接写入 COS。
+- 系统保存站内访问地址，例如 `/api/storage/cos/文件名`。
+- 用户打开资料时，由服务器生成 10 分钟有效的临时签名链接并跳转到 COS。
+- COS 存储桶无需设置为公有读。
+
+建议存储桶权限：
+
+- 访问权限：私有读写。
+- CAM 子用户权限：仅授予当前桶的上传、读取、查询对象权限。
+- 不要使用主账号密钥。
+- 不要把密钥提交到 GitHub。
+
+本项目会在以下变量齐全时自动切换到 COS：
+
+```env
+TENCENT_COS_REGION=ap-shanghai
+TENCENT_COS_BUCKET=gongchenggunli-001-1424037473
+TENCENT_COS_PUBLIC_BASE_URL=https://gongchenggunli-001-1424037473.cos.ap-shanghai.myqcloud.com
+TENCENT_COS_ACCESS_MODE=private
+TENCENT_COS_SECRET_ID=服务器中填写
+TENCENT_COS_SECRET_KEY=服务器中填写
+```
+
+`TENCENT_COS_ACCESS_MODE=private` 表示使用私有桶签名访问。若改成 `public`，系统会保存 COS 公开直链。
 
 ## 五、安装依赖并构建
 
@@ -216,5 +256,5 @@ PUBLIC_PRIMARY_DOMAIN=https://www.guo123guo.cn
 ## 十一、当前未完成事项
 
 - 备案未通过前，不建议正式开放域名访问。
-- 当前上传文件保存在服务器本地 `uploads/`，后续资料量变大后可切换腾讯云 COS。
+- 当前上传文件可写入腾讯云 COS 私有桶，若 COS 变量缺失则自动回退本地 `uploads/`。
 - 当前默认数据后端为 `json`，正式多人长期使用建议升级 PostgreSQL。
