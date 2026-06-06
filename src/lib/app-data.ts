@@ -20,6 +20,8 @@ function buildActiveProjectView(data: StoreData): StoreData {
   const changes = data.changes.filter((item) => belongsToActiveProject(item, activeProjectId));
   const visas = data.visas.filter((item) => belongsToActiveProject(item, activeProjectId));
   const dailyLogs = data.dailyLogs.filter((item) => item.projectId === activeProjectId);
+  const quantities = data.quantities.filter((item) => item.projectId === activeProjectId);
+  const quantityIds = new Set(quantities.map((item) => item.id));
   const incidents = data.incidents.filter((item) => belongsToActiveProject(item, activeProjectId));
   const visibleReviewItems = data.reviewItems.filter((item) => {
     if (item.status !== "submitted") return false;
@@ -35,6 +37,8 @@ function buildActiveProjectView(data: StoreData): StoreData {
   return {
     ...data,
     dailyLogs,
+    quantities,
+    quantityUpdates: data.quantityUpdates.filter((item) => item.projectId === activeProjectId && quantityIds.has(item.quantityId)),
     materials,
     stockIns: data.stockIns.filter((item) => materialIds.has(item.materialId)),
     stockOuts: data.stockOuts.filter((item) => materialIds.has(item.materialId)),

@@ -103,6 +103,37 @@ export type DailyLog = {
   attachments: Attachment[];
 };
 
+export type QuantityStatus = "not_started" | "in_progress" | "completed" | "delayed" | "overdue";
+
+export type QuantityItem = {
+  id: string;
+  projectId: string;
+  name: string;
+  unit: string;
+  totalQuantity: number;
+  completedQuantity: number;
+  plannedFinishDate?: string;
+  workArea: string;
+  category: string;
+  owner: string;
+  status: QuantityStatus;
+  remark?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type QuantityUpdate = {
+  id: string;
+  quantityId: string;
+  projectId: string;
+  completedAmount: number;
+  updatedAt: string;
+  submittedBy: string;
+  description: string;
+  delayReason?: string;
+  attachments: Attachment[];
+};
+
 export type Material = {
   id: string;
   projectId: string;

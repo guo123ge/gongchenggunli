@@ -9,6 +9,7 @@ export type ModuleKey =
   | "project"
   | "documents"
   | "daily-log"
+  | "quantity"
   | "material"
   | "machinery"
   | "safety"

@@ -7,6 +7,8 @@ import {
   machinery,
   materials,
   project,
+  quantities,
+  quantityUpdates,
   reviewItems,
   stockIns,
   stockOuts,
@@ -23,6 +25,8 @@ import type {
   MaintenanceRecord,
   Material,
   Project,
+  QuantityItem,
+  QuantityUpdate,
   RegistrationRequest,
   ReviewItem,
   SafetyIncident,
@@ -36,6 +40,8 @@ export type StoreData = {
   projects: Project[];
   registrationRequests: RegistrationRequest[];
   dailyLogs: DailyLog[];
+  quantities: QuantityItem[];
+  quantityUpdates: QuantityUpdate[];
   materials: Material[];
   stockIns: StockRecord[];
   stockOuts: StockRecord[];
@@ -62,6 +68,8 @@ const initialData: StoreData = {
   projects: [project],
   registrationRequests: [],
   dailyLogs,
+  quantities,
+  quantityUpdates,
   materials,
   stockIns,
   stockOuts,
@@ -180,6 +188,8 @@ async function readStoreFile(): Promise<StoreData> {
   const data = JSON.parse(raw) as StoreData;
   data.archiveFiles ??= initialData.archiveFiles;
   data.documents ??= initialData.documents;
+  data.quantities ??= initialData.quantities;
+  data.quantityUpdates ??= initialData.quantityUpdates;
   data.archives ??= initialData.archives;
   data.changes ??= initialData.changes;
   data.visas ??= initialData.visas;
@@ -208,6 +218,12 @@ function normalizeStoreData(data: StoreData) {
     item.projectId ??= fallbackProjectId;
   });
   data.visas.forEach((item) => {
+    item.projectId ??= fallbackProjectId;
+  });
+  data.quantities.forEach((item) => {
+    item.projectId ??= fallbackProjectId;
+  });
+  data.quantityUpdates.forEach((item) => {
     item.projectId ??= fallbackProjectId;
   });
 }

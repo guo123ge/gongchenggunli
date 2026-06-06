@@ -1150,6 +1150,8 @@ export async function readPrismaStore(): Promise<StoreData> {
     documents: [],
     changes,
     visas,
+    quantities: [],
+    quantityUpdates: [],
   };
 }
 

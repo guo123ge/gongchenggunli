@@ -17,6 +17,7 @@ export const MODULE_LABELS: Record<ModuleKey, string> = {
   project: "项目管理",
   documents: "资料库",
   "daily-log": "施工日志",
+  quantity: "工程量",
   material: "材料管理",
   machinery: "机械管理",
   safety: "安全管理",
@@ -53,3 +54,5 @@ export const DAILY_LOG_TEMPLATES = [
 ];
 
 export const MATERIAL_CATEGORIES = ["钢筋", "混凝土", "木材", "防水", "装饰", "其他"];
+
+export const QUANTITY_CATEGORIES = ["土建", "钢筋", "模板", "混凝土", "砌体", "装饰", "机电", "消防", "室外", "其他"];

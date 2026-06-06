@@ -1,9 +1,9 @@
 import type { ModuleKey, ProjectRole } from "@/types/enums";
 
 const moduleAccess: Record<ProjectRole, ModuleKey[]> = {
-  PM: ["dashboard", "project", "documents", "daily-log", "material", "machinery", "safety", "archive", "change-visa", "review"],
-  CON: ["dashboard", "documents", "daily-log", "material", "safety"],
-  TECH: ["dashboard", "documents", "daily-log", "archive", "change-visa"],
+  PM: ["dashboard", "project", "documents", "daily-log", "quantity", "material", "machinery", "safety", "archive", "change-visa", "review"],
+  CON: ["dashboard", "documents", "daily-log", "quantity", "material", "safety"],
+  TECH: ["dashboard", "documents", "daily-log", "quantity", "archive", "change-visa"],
   SAFE: ["dashboard", "documents", "daily-log", "safety", "review"],
   MAT: ["dashboard", "documents", "material", "daily-log"],
   DOC: ["dashboard", "documents", "archive", "daily-log", "change-visa"],
