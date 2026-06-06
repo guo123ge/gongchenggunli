@@ -31,6 +31,7 @@ export function QuantityForm({ project, initial }: QuantityFormProps) {
   const totalQuantity = Number(form.totalQuantity || 0);
   const completedQuantity = Number(form.completedQuantity || 0);
   const preview = { totalQuantity, completedQuantity, plannedFinishDate: form.plannedFinishDate };
+  const remainingDays = getRemainingDays(form.plannedFinishDate);
 
   function update(key: keyof typeof form, value: string) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -68,7 +69,7 @@ export function QuantityForm({ project, initial }: QuantityFormProps) {
       </CardHeader>
       <div className="grid gap-4 md:grid-cols-2">
         <Field label="工程量名称">
-          <Input value={form.name} onChange={(event) => update("name", event.target.value)} placeholder="如 地下室顶板混凝土" />
+          <Input value={form.name} onChange={(event) => update("name", event.target.value)} placeholder="例如：地下室顶板混凝土" />
         </Field>
         <Field label="专业类别">
           <select value={form.category} onChange={(event) => update("category", event.target.value)} className="h-11 w-full rounded-xl border border-border bg-panel px-3 text-sm text-foreground outline-none transition focus:border-brand">
@@ -92,10 +93,10 @@ export function QuantityForm({ project, initial }: QuantityFormProps) {
           <Input type="date" value={form.plannedFinishDate} onChange={(event) => update("plannedFinishDate", event.target.value)} />
         </Field>
         <Field label="施工部位">
-          <Input value={form.workArea} onChange={(event) => update("workArea", event.target.value)} placeholder="如 地下室 B 区" />
+          <Input value={form.workArea} onChange={(event) => update("workArea", event.target.value)} placeholder="例如：地下室 B 区" />
         </Field>
         <Field label="责任人">
-          <Input value={form.owner} onChange={(event) => update("owner", event.target.value)} placeholder="如 林施工" />
+          <Input value={form.owner} onChange={(event) => update("owner", event.target.value)} placeholder="例如：林施工" />
         </Field>
         <Field label="备注" className="md:col-span-2">
           <Textarea value={form.remark} onChange={(event) => update("remark", event.target.value)} placeholder="记录计量口径、验收依据或风险说明。" />
@@ -104,7 +105,7 @@ export function QuantityForm({ project, initial }: QuantityFormProps) {
       <div className="mt-5 grid gap-3 rounded-2xl border border-border bg-panel-soft p-4 text-sm md:grid-cols-3">
         <Preview label="剩余工程量" value={`${getRemainingQuantity(preview)} ${form.unit || ""}`} />
         <Preview label="完成百分比" value={`${getQuantityPercent(preview)}%`} />
-        <Preview label="剩余工期" value={getRemainingDays(form.plannedFinishDate) === null ? "未设置计划日期" : `${getRemainingDays(form.plannedFinishDate)} 天`} />
+        <Preview label="剩余工期" value={remainingDays === null ? "未设置计划日期" : `${remainingDays} 天`} />
       </div>
       <div className="mt-5 flex justify-end gap-3">
         <Button type="button" variant="secondary" onClick={() => router.back()}>

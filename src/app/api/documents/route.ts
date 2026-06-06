@@ -100,7 +100,7 @@ function cleanText(value: unknown, fallback: string) {
 
 function cleanModule(value: unknown): ModuleKey {
   const text = String(value ?? "");
-  const modules: ModuleKey[] = ["documents", "daily-log", "material", "machinery", "safety", "archive", "change-visa", "review", "project", "dashboard"];
+  const modules: ModuleKey[] = ["documents", "daily-log", "quantity", "material", "machinery", "safety", "archive", "change-visa", "review", "project", "dashboard"];
   return modules.includes(text as ModuleKey) ? (text as ModuleKey) : "documents";
 }
 

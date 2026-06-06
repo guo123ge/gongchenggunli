@@ -11,6 +11,7 @@ import type { ModuleKey } from "@/types/enums";
 const moduleOptions: Array<{ value: ModuleKey; label: string }> = [
   { value: "documents", label: "通用资料" },
   { value: "daily-log", label: "施工日志" },
+  { value: "quantity", label: "工程量" },
   { value: "material", label: "材料管理" },
   { value: "safety", label: "安全管理" },
   { value: "machinery", label: "机械管理" },

@@ -33,6 +33,7 @@ model User {
   machinery          Machinery[]
   maintenanceRecords MaintenanceRecord[]
   shiftRecords       ShiftRecord[]
+  quantityUpdates    QuantityUpdate[]
 
   reviewedDailyLogs DailyLog[] @relation("DailyLogReviewer")
   reviewedStockIns  StockIn[]  @relation("StockInReviewer")
@@ -95,6 +96,7 @@ model Project {
   archives         Archive[]
   designChanges    DesignChange[]
   engineeringVisas EngineeringVisa[]
+  quantities        QuantityItem[]
 }
 
 model ProjectMember {
@@ -153,6 +155,7 @@ model Attachment {
   machineryId      String?
   changeId         String?
   visaId           String?
+  quantityUpdateId String?
   fileName         String
   filePath         String
   fileType         String
@@ -171,6 +174,7 @@ model Attachment {
   machinery Machinery? @relation(fields: [machineryId], references: [id])
   change    DesignChange? @relation(fields: [changeId], references: [id])
   visa      EngineeringVisa? @relation(fields: [visaId], references: [id])
+  quantityUpdate QuantityUpdate? @relation(fields: [quantityUpdateId], references: [id])
 }
 
 model AudioNote {
@@ -201,6 +205,47 @@ model Material {
   stockOuts StockOut[]
 
   @@unique([projectId, name, spec])
+}
+
+model QuantityItem {
+  id                String   @id @default(uuid())
+  projectId         String
+  name              String
+  unit              String
+  totalQuantity     Float
+  completedQuantity Float    @default(0)
+  plannedFinishDate DateTime?
+  workArea          String
+  category          String
+  owner             String
+  status            String   @default("not_started")
+  remark            String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  updates QuantityUpdate[]
+
+  @@index([projectId, status])
+}
+
+model QuantityUpdate {
+  id              String   @id @default(uuid())
+  quantityId      String
+  projectId       String
+  completedAmount Float
+  updatedAt       DateTime
+  submittedById   String?
+  submittedByName String
+  description     String
+  delayReason     String?
+  createdAt       DateTime @default(now())
+
+  quantity    QuantityItem @relation(fields: [quantityId], references: [id], onDelete: Cascade)
+  submittedBy User?        @relation(fields: [submittedById], references: [id])
+  attachments Attachment[]
+
+  @@index([projectId, quantityId])
 }
 
 model StockIn {
@@ -402,4 +447,3 @@ model EngineeringVisa {
   reviewedBy  User? @relation("VisaReviewer", fields: [reviewedById], references: [id])
   attachments Attachment[]
 }
-
