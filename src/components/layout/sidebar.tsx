@@ -11,6 +11,7 @@ import {
   Truck,
   WalletCards,
 } from "lucide-react";
+import { LogoutButton } from "@/components/auth/logout-button";
 import { MODULE_LABELS, ROLE_LABELS } from "@/lib/constants";
 import { canView } from "@/lib/permissions";
 import type { Project } from "@/types";
@@ -68,6 +69,9 @@ export function Sidebar({ currentUser, project }: { currentUser: SidebarUser; pr
           {currentUser.displayName} / {ROLE_LABELS[currentUser.role]}
         </p>
         <p className="mt-2 text-xs leading-5 text-muted">演示账号统一密码为 123456，菜单会按当前角色自动显示。</p>
+        <div className="mt-4">
+          <LogoutButton />
+        </div>
       </div>
     </aside>
   );

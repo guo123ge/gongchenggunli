@@ -1,22 +1,32 @@
 "use client";
 
-import { useState } from "react";
 import { Input } from "@/components/ui/input";
 
-export function ManualDateInput({ defaultValue = "", placeholder = "日期，如 20260531" }: { defaultValue?: string; placeholder?: string }) {
-  const [value, setValue] = useState(formatDateInput(defaultValue));
+type ManualDateInputProps = {
+  value?: string;
+  defaultValue?: string;
+  onChange?: (value: string) => void;
+  placeholder?: string;
+};
 
+export function ManualDateInput({ value, defaultValue = "", onChange, placeholder = "日期，如 20260531" }: ManualDateInputProps) {
+  const currentValue = value ?? defaultValue;
   return (
     <Input
       type="text"
       inputMode="numeric"
       maxLength={10}
       placeholder={placeholder}
-      value={value}
-      onChange={(event) => setValue(formatDateInput(event.target.value))}
-      aria-label="日期筛选"
+      value={formatDateInput(currentValue)}
+      onChange={(event) => onChange?.(formatDateInput(event.target.value))}
+      aria-label="日期输入"
+      readOnly={!onChange}
     />
   );
+}
+
+export function normalizeManualDate(value: string) {
+  return value.replace(/\//g, "-");
 }
 
 function formatDateInput(input: string) {

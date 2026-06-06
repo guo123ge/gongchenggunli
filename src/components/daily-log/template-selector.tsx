@@ -1,7 +1,6 @@
 "use client";
 
 import { DAILY_LOG_TEMPLATES } from "@/lib/constants";
-import { Button } from "@/components/ui/button";
 
 export function TemplateSelector({
   onSelect,
@@ -19,12 +18,11 @@ export function TemplateSelector({
         >
           <p className="font-semibold text-white">{template.name}</p>
           <p className="mt-2 line-clamp-3 text-sm leading-6 text-muted">{template.workContent}</p>
-          <Button type="button" variant="ghost" className="mt-3 px-0 text-brand">
+          <span className="mt-3 inline-flex h-10 items-center text-sm font-semibold text-brand">
             套用模板
-          </Button>
+          </span>
         </button>
       ))}
     </div>
   );
 }
-

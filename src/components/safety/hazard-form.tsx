@@ -62,7 +62,7 @@ export function HazardForm() {
       }
       setAnalysis(body.data);
       setRiskLevel(body.data.riskLevel);
-      toast.success(body.data.provider === "openai" ? "风险识别完成" : "已使用回退识别结果");
+      toast.success(body.data.provider === "openai" ? "风险识别完成" : "已生成本地规则参考结果");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "安全风险识别失败");
     } finally {

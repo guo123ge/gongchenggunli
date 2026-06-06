@@ -106,6 +106,10 @@ TENCENT_COS_PUBLIC_BASE_URL=https://gongchenggunli-001-1424037473.cos.ap-shangha
 TENCENT_COS_ACCESS_MODE=private
 TENCENT_COS_SECRET_ID=请在服务器内填写子用户SecretId
 TENCENT_COS_SECRET_KEY=请在服务器内填写子用户SecretKey
+TENCENT_ASR_REGION=ap-shanghai
+TENCENT_ASR_SECRET_ID=请在服务器内填写语音识别子用户SecretId
+TENCENT_ASR_SECRET_KEY=请在服务器内填写语音识别子用户SecretKey
+TENCENT_ASR_ENGINE_MODEL_TYPE=16k_zh
 EOF
 ```
 
@@ -116,6 +120,22 @@ mkdir -p /www/gongchenggunli/uploads
 ```
 
 如果启用腾讯云 COS 私有桶，`uploads` 目录仍建议保留作为回退目录。`TENCENT_COS_SECRET_ID` 和 `TENCENT_COS_SECRET_KEY` 只在服务器 `.env.production` 中填写，不要写入 Git 仓库，也不要发给他人。
+
+如果启用腾讯云 ASR 语音识别，建议给 CAM 子用户增加一句话识别相关权限，并只在服务器 `.env.production` 中填写 `TENCENT_ASR_SECRET_ID` 和 `TENCENT_ASR_SECRET_KEY`。手机端上传 `m4a`、`mp3`、`wav` 音频更适合腾讯云识别；浏览器直接录制的 `webm` 会保留语音文件并提示格式暂不支持。
+
+创建或修改 `.env.production` 后，可运行配置核对脚本。脚本只检查密钥是否填写，不会输出密钥内容：
+
+```bash
+npm run verify:production-config
+```
+
+本地也可以用示例文件检查变量结构：
+
+```bash
+ENV_FILE=.env.example npm run verify:production-config
+```
+
+用 `.env.example` 检查时，`NEXTAUTH_SECRET` 仍是示例占位值，出现该错误是正常的；生产服务器检查 `.env.production` 时必须修复。其他情况下，如果输出存在“错误”，应先修正后再构建和启动；如果只有“提醒”，表示系统可运行，但对应能力可能处于回退或待正式域名启用状态。
 
 ## 四点一、腾讯云 COS 私有桶设置
 
@@ -216,18 +236,26 @@ systemctl reload nginx
 
 ```bash
 curl -I http://127.0.0.1:3000/api/health
+npm run verify:deployment-health
 ```
 
 公网验证：
 
 ```bash
 curl -I http://124.221.103.75/api/health
+PUBLIC_URL=http://124.221.103.75 npm run verify:deployment-health
 ```
 
 浏览器访问：
 
 ```text
 http://124.221.103.75/login?callbackUrl=%2Fdashboard
+```
+
+如果备案后启用正式域名，可检查域名解析是否指向服务器公网 IP：
+
+```bash
+PUBLIC_URL=https://www.guo123guo.cn EXPECTED_HOST=124.221.103.75 npm run verify:deployment-health
 ```
 
 ## 九、后续更新流程
@@ -240,6 +268,8 @@ git pull
 npm install
 npm run build
 pm2 restart gongchenggunli
+npm run verify:production-config
+PUBLIC_URL=http://124.221.103.75 npm run verify:deployment-health
 ```
 
 ## 十、备案通过后的域名与 HTTPS

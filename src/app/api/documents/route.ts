@@ -72,6 +72,27 @@ export async function PATCH(request: Request) {
   return NextResponse.json({ ok: true, data: updated });
 }
 
+export async function DELETE(request: Request) {
+  const session = await auth();
+  if (session?.user?.role !== "PM") {
+    return NextResponse.json({ ok: false, error: "只有项目经理可以删除资料。" }, { status: 403 });
+  }
+
+  const { searchParams } = new URL(request.url);
+  const id = cleanText(searchParams.get("id"), "");
+  if (!id) return NextResponse.json({ ok: false, error: "资料记录编号不能为空。" }, { status: 422 });
+
+  const deleted = await updateStore((data) => {
+    const target = data.documents.find((item) => item.id === id && item.projectId === data.project.id);
+    if (!target) return null;
+    data.documents = data.documents.filter((item) => item.id !== id);
+    return target;
+  });
+
+  if (!deleted) return NextResponse.json({ ok: false, error: "未找到要删除的资料记录。" }, { status: 404 });
+  return NextResponse.json({ ok: true, data: deleted });
+}
+
 function cleanText(value: unknown, fallback: string) {
   const text = String(value ?? "").trim();
   return text || fallback;

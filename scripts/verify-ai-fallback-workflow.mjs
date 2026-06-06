@@ -23,15 +23,12 @@ const transcribeResponse = await fetch(`${baseUrl}/api/ai/transcribe`, {
   body: new Blob([new Uint8Array()]),
 });
 const transcribeBody = await transcribeResponse.json();
-if (!transcribeResponse.ok || transcribeBody.ok === false) {
-  throw new Error(`/api/ai/transcribe failed: ${JSON.stringify(transcribeBody)}`);
+if (transcribeResponse.ok || transcribeBody.ok !== false || transcribeBody.reason !== "empty-audio") {
+  throw new Error(`expected transcribe empty-audio failure: ${JSON.stringify(transcribeBody)}`);
 }
 
 if (ocr.provider !== "fallback") throw new Error(`expected OCR fallback provider: ${JSON.stringify(ocr)}`);
 if (safety.provider !== "fallback") throw new Error(`expected safety fallback provider: ${JSON.stringify(safety)}`);
-if (!transcribeBody.data.transcript.includes("回退转写")) {
-  throw new Error(`expected fallback transcript: ${JSON.stringify(transcribeBody)}`);
-}
 
 console.log(
   JSON.stringify(
@@ -39,7 +36,8 @@ console.log(
       ok: true,
       ocrProvider: ocr.provider,
       safetyProvider: safety.provider,
-      transcript: transcribeBody.data.transcript,
+      transcribeStatus: transcribeBody.reason,
+      transcribeMessage: transcribeBody.error,
     },
     null,
     2,

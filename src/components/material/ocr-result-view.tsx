@@ -40,7 +40,7 @@ export function OcrResultView({ imageBase64, onApply }: OcrResultViewProps) {
         throw new Error(body.error ?? "单据识别失败");
       }
       setResult(body.data);
-      toast.success(body.data.provider === "openai" ? "单据识别完成" : "已使用回退识别结果");
+      toast.success(body.data.provider === "openai" ? "单据识别完成" : "已生成本地规则参考结果");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "单据识别失败");
     } finally {

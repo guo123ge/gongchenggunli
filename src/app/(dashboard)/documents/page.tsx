@@ -1,6 +1,7 @@
 import { Archive, BrainCircuit, Files, PieChart } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { DocumentBulkPanel } from "@/components/documents/document-bulk-panel";
+import { DocumentDeleteButton } from "@/components/documents/document-delete-button";
 import { DocumentOpenButton } from "@/components/documents/document-open-button";
 import { DocumentReviewButton } from "@/components/documents/document-review-button";
 import { DocumentsFilterBar } from "@/components/documents/documents-filter-bar";
@@ -34,6 +35,7 @@ export default async function DocumentsPage({
 }) {
   const session = await auth();
   const currentRole = (session?.user?.role ?? "CON") as ProjectRole;
+  const canDeleteDocument = currentRole === "PM";
   const data = await readAppData();
   const visibleDocuments = data.documents.filter((item) => !item.visibilityRoles || item.visibilityRoles.includes(currentRole));
   const { keyword = "", module = "", role = "", aiStatus = "" } = await searchParams;
@@ -129,7 +131,7 @@ export default async function DocumentsPage({
         <CardHeader>
           <div>
             <CardTitle>资料清单</CardTitle>
-            <CardDescription>筛选后共 {documents.length} 份资料。</CardDescription>
+            <CardDescription>筛选后共 {documents.length} 份资料。项目经理可删除资料库中的资料记录。</CardDescription>
           </div>
         </CardHeader>
         <div className="space-y-3">
@@ -155,8 +157,8 @@ export default async function DocumentsPage({
                   {item.aiSummary && <p className="mt-2 rounded-xl bg-panel-soft p-3 text-sm text-slate-200">{item.aiSummary}</p>}
                   {item.accessLogs && item.accessLogs.length > 0 && (
                     <p className="mt-2 text-xs text-muted">
-                      最近访问：{item.accessLogs[0].userName} / {ROLE_LABELS[item.accessLogs[0].userRole]} /{" "}
-                      {item.accessLogs[0].action === "download" ? "下载" : "查看"} / {item.accessLogs[0].createdAt}
+                      最近访问：{item.accessLogs[0].userName} / {ROLE_LABELS[item.accessLogs[0].userRole]} / {item.accessLogs[0].action === "download" ? "下载" : "查看"} /{" "}
+                      {item.accessLogs[0].createdAt}
                     </p>
                   )}
                 </div>
@@ -168,6 +170,7 @@ export default async function DocumentsPage({
                   </span>
                   <DocumentReviewButton id={item.id} title={item.title} fileName={item.fileName} sourceType={item.sourceType} />
                   <DocumentOpenButton id={item.id} url={item.url} />
+                  {canDeleteDocument && <DocumentDeleteButton id={item.id} title={item.title} />}
                 </div>
               </div>
             </div>

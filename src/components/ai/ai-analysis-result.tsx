@@ -27,7 +27,7 @@ export function AiAnalysisResult({ result }: AiAnalysisResultProps) {
         ))}
       </div>
       <p className="mt-3 rounded-xl bg-slate-950/30 p-3 text-sm text-sky-50">{result.advice}</p>
-      <p className="mt-2 text-xs text-sky-200/90">数据来源：{result.provider === "openai" ? "云端模型" : "回退模型"}</p>
+      <p className="mt-2 text-xs text-sky-200/90">数据来源：{result.provider === "openai" ? "云端模型" : "本地规则参考结果"}</p>
     </div>
   );
 }

@@ -22,8 +22,9 @@ export const currentUser: User = {
 export const users: User[] = [
   currentUser,
   { id: "u-con", username: "con", displayName: "林施工", phone: "13800000002", globalRole: "user", role: "CON" },
-  { id: "u-mat", username: "mat", displayName: "何材料", phone: "13800000003", globalRole: "user", role: "MAT" },
+  { id: "u-tech", username: "tech", displayName: "吴技术", phone: "13800000007", globalRole: "user", role: "TECH" },
   { id: "u-safe", username: "safe", displayName: "陈安全", phone: "13800000004", globalRole: "user", role: "SAFE" },
+  { id: "u-mat", username: "mat", displayName: "何材料", phone: "13800000003", globalRole: "user", role: "MAT" },
   { id: "u-doc", username: "doc", displayName: "宋资料", phone: "13800000005", globalRole: "user", role: "DOC" },
   { id: "u-mach", username: "mach", displayName: "赵机械", phone: "13800000006", globalRole: "user", role: "MACH" },
 ];

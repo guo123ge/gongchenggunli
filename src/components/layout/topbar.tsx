@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Bell, Menu, Wifi, WifiOff, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { LogoutButton } from "@/components/auth/logout-button";
 import { GlobalSearchBox } from "@/components/layout/global-search-box";
 import { Button } from "@/components/ui/button";
 import { useOfflineSync } from "@/hooks/use-offline-sync";
@@ -143,6 +144,7 @@ export function Topbar({
             <span className="text-muted">您好，</span>
             <span className="font-semibold text-white">{currentUserName}</span>
           </div>
+          <LogoutButton compact />
         </div>
       </div>
     </header>

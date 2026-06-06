@@ -10,13 +10,9 @@ export const dailyLogSchema = z.object({
   workPosition: z.string().min(1, "请填写施工部位"),
   workProcess: z.string().min(1, "请填写施工工序"),
   laborCount: z.coerce.number().min(0),
-  laborDetail: z
-    .array(z.object({ type: z.string().min(1), count: z.coerce.number().min(0) }))
-    .default([]),
+  laborDetail: z.array(z.object({ type: z.string().min(1), count: z.coerce.number().min(0) })).default([]),
   machineryUsed: z.array(z.string()).default([]),
-  materialUsed: z
-    .array(z.object({ name: z.string(), quantity: z.coerce.number().min(0), unit: z.string() }))
-    .default([]),
+  materialUsed: z.array(z.object({ name: z.string(), quantity: z.coerce.number().min(0), unit: z.string() })).default([]),
   qualityCheck: z.string().optional(),
   safetyCheck: z.string().optional(),
   status: z.enum(["draft", "submitted"]).default("draft"),
@@ -37,4 +33,3 @@ export const reviewSchema = z.object({
   action: z.enum(["approve", "reject", "return"]),
   comment: z.string().optional(),
 });
-

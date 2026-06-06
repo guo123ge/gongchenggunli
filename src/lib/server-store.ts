@@ -176,7 +176,7 @@ export async function readStore(): Promise<StoreData> {
 
 async function readStoreFile(): Promise<StoreData> {
   await ensureStoreFile();
-  const raw = await readFile(dataFile, "utf8");
+  const raw = (await readFile(dataFile, "utf8")).replace(/^\uFEFF/, "");
   const data = JSON.parse(raw) as StoreData;
   data.archiveFiles ??= initialData.archiveFiles;
   data.documents ??= initialData.documents;
