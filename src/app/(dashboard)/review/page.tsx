@@ -18,7 +18,7 @@ export default async function ReviewPage() {
       <div>
         <p className="text-sm text-brand">审核中心</p>
         <h1 className="mt-2 text-3xl font-black text-white">审核中心</h1>
-        <p className="mt-2 text-muted">项目经理专属入口，统一处理日志、材料、机械、安全、档案、变更签证。</p>
+        <p className="mt-2 text-muted">项目经理专属入口，统一处理日志、材料、机械、安全、档案、变更签证等待审事项。</p>
       </div>
       <Card>
         <CardHeader>
@@ -34,7 +34,9 @@ export default async function ReviewPage() {
               <div key={`${item.targetType}-${item.id}`} className="grid gap-3 rounded-2xl border border-border bg-panel/60 p-4 lg:grid-cols-[1fr_auto_auto] lg:items-center">
                 <Link href={detailHref} className="block rounded-xl outline-none transition hover:text-brand focus-visible:ring-2 focus-visible:ring-brand">
                   <p className="font-semibold text-white">{item.title}</p>
-                  <p className="mt-1 text-xs text-muted">{MODULE_LABELS[item.targetType]} / {item.submittedBy} / {item.submittedAt}</p>
+                  <p className="mt-1 text-xs text-muted">
+                    {MODULE_LABELS[item.targetType]} / {item.submittedBy} / {item.submittedAt}
+                  </p>
                 </Link>
                 <StatusBadge status={item.status} />
                 <div className="flex flex-wrap gap-2">

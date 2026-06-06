@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { readAppData } from "@/lib/app-data";
 import { isPrismaBackendEnabled } from "@/lib/data-backend";
 import { createPrismaVisa, getPrismaVisas } from "@/lib/prisma-repository";
-import { updateStore } from "@/lib/server-store";
+import { addReviewItem, updateStore } from "@/lib/server-store";
 import type { VisaRecord } from "@/types";
 
 export async function GET() {
@@ -29,6 +29,17 @@ export async function POST(request: Request) {
       createdAt: new Date().toLocaleString("zh-CN"),
     };
     data.visas.unshift(item);
+    if (item.status === "submitted") {
+      addReviewItem(data, {
+        id: item.id,
+        targetType: "change-visa",
+        title: `工程签证待审核：${item.title}`,
+        submittedBy: item.submittedBy,
+        submittedAt: item.createdAt,
+        status: "submitted",
+        priority: "urgent",
+      });
+    }
     return item;
   });
   return NextResponse.json({ ok: true, data: created });

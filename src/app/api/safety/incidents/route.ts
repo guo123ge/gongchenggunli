@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { isPrismaBackendEnabled } from "@/lib/data-backend";
 import { createPrismaIncident, getPrismaIncidents } from "@/lib/prisma-repository";
-import { readStore, updateStore } from "@/lib/server-store";
+import { addReviewItem, readStore, updateStore } from "@/lib/server-store";
 import type { SafetyIncident } from "@/types";
 
 export async function GET() {
@@ -28,6 +28,17 @@ export async function POST(request: Request) {
       submittedBy: String(body.submittedBy ?? "安全员"),
     };
     data.incidents.unshift(item);
+    if (item.status === "submitted") {
+      addReviewItem(data, {
+        id: item.id,
+        targetType: "safety",
+        title: `安全事件待审核：${item.title}`,
+        submittedBy: item.submittedBy,
+        submittedAt: item.incidentDate,
+        status: "submitted",
+        priority: item.level === "high" || item.level === "critical" ? "urgent" : "normal",
+      });
+    }
     return item;
   });
   return NextResponse.json({ ok: true, data: created });

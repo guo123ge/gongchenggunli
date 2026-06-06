@@ -37,7 +37,7 @@ export async function POST(request: Request) {
           status,
           target,
           reviewedAt: new Date().toISOString(),
-          reviewer: "周项目",
+          reviewer: session.user.name ?? "项目经理",
         },
       });
     } catch (error) {
@@ -49,11 +49,19 @@ export async function POST(request: Request) {
     const status = getReviewStatus(parsed.data.action);
     closeReviewItem(data, parsed.data.targetType, parsed.data.targetId, status);
 
+    if (parsed.data.targetType === "documents") {
+      const document = data.documents.find((item) => item.id === parsed.data.targetId);
+      if (!document) return { error: "资料记录不存在。" };
+      document.reviewStatus = status;
+      document.aiSummary = parsed.data.comment ?? getDefaultReviewComment(status);
+      return { target: document, status };
+    }
+
     if (parsed.data.targetType === "daily-log") {
       const log = data.dailyLogs.find((item) => item.id === parsed.data.targetId);
       if (!log) return { error: "施工日志不存在。" };
       log.status = status;
-      log.reviewedBy = "周项目";
+      log.reviewedBy = session.user.name ?? "项目经理";
       log.reviewComment = parsed.data.comment ?? getDefaultReviewComment(status);
       return { target: log, status };
     }
@@ -99,7 +107,7 @@ export async function POST(request: Request) {
       const incident = data.incidents.find((item) => item.id === parsed.data.targetId);
       if (!incident) return { error: "安全记录不存在。" };
       incident.status = status;
-      incident.reviewedBy = "周项目";
+      incident.reviewedBy = session.user.name ?? "项目经理";
       incident.reviewComment = parsed.data.comment ?? getDefaultReviewComment(status);
       return { target: incident, status };
     }
@@ -143,7 +151,7 @@ export async function POST(request: Request) {
       status: result.status,
       target: result.target,
       reviewedAt: new Date().toISOString(),
-      reviewer: "周项目",
+      reviewer: session.user.name ?? "项目经理",
     },
   });
 }

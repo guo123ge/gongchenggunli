@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { saveUploadedFile } from "@/lib/storage";
-import { updateStore } from "@/lib/server-store";
+import { addReviewItem, updateStore } from "@/lib/server-store";
 import type { DocumentRecord } from "@/types";
 import type { ModuleKey, ProjectRole } from "@/types/enums";
 
@@ -31,6 +31,7 @@ export async function POST(request: Request) {
   const shouldRegister = String(formData.get("registerDocument") ?? "false") === "true";
   if (shouldRegister) {
     await updateStore((store) => {
+      const submittedBy = session?.user?.name ?? "当前用户";
       const record: DocumentRecord = {
         id: crypto.randomUUID(),
         projectId: store.project.id,
@@ -41,7 +42,7 @@ export async function POST(request: Request) {
         fileSize: data.fileSize,
         url: saved.url,
         storageProvider: saved.storageProvider,
-        submittedBy: session?.user?.name ?? "当前用户",
+        submittedBy,
         submittedRole: ((session?.user?.role as ProjectRole | undefined) ?? "CON") as ProjectRole,
         reviewStatus: "submitted",
         aiReviewStatus: "pending",
@@ -51,6 +52,15 @@ export async function POST(request: Request) {
         createdAt: new Date().toLocaleString("zh-CN"),
       };
       store.documents.unshift(record);
+      addReviewItem(store, {
+        id: record.id,
+        targetType: "documents",
+        title: `资料待审核：${record.title}`,
+        submittedBy,
+        submittedAt: record.createdAt,
+        status: "submitted",
+        priority: "normal",
+      });
     });
   }
 

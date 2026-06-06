@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { readAppData } from "@/lib/app-data";
 import { isPrismaBackendEnabled } from "@/lib/data-backend";
 import { createPrismaArchive, getPrismaArchives } from "@/lib/prisma-repository";
-import { updateStore } from "@/lib/server-store";
+import { addReviewItem, updateStore } from "@/lib/server-store";
 import type { ArchiveRecord } from "@/types";
 
 export async function GET() {
@@ -30,6 +30,17 @@ export async function POST(request: Request) {
       createdAt: new Date().toLocaleString("zh-CN"),
     };
     data.archives.unshift(item);
+    if (item.status === "submitted") {
+      addReviewItem(data, {
+        id: item.id,
+        targetType: "archive",
+        title: `档案待审核：${item.title}`,
+        submittedBy: item.submittedBy,
+        submittedAt: item.createdAt,
+        status: "submitted",
+        priority: "normal",
+      });
+    }
     return item;
   });
   return NextResponse.json({ ok: true, data: created });

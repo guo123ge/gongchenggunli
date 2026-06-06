@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { readAppData } from "@/lib/app-data";
 import { isPrismaBackendEnabled } from "@/lib/data-backend";
 import { createPrismaMachinery, getPrismaMachinery } from "@/lib/prisma-repository";
-import { updateStore } from "@/lib/server-store";
+import { addReviewItem, updateStore } from "@/lib/server-store";
 import type { Machinery } from "@/types";
 
 export async function GET() {
@@ -29,6 +29,17 @@ export async function POST(request: Request) {
       shiftsThisMonth: Number(body.shiftsThisMonth ?? 0),
     };
     data.machinery.unshift(item);
+    if (item.status === "submitted") {
+      addReviewItem(data, {
+        id: item.id,
+        targetType: "machinery",
+        title: `机械进场待审核：${item.name}`,
+        submittedBy: item.operator,
+        submittedAt: new Date().toLocaleString("zh-CN"),
+        status: "submitted",
+        priority: "normal",
+      });
+    }
     return item;
   });
   return NextResponse.json({ ok: true, data: created });

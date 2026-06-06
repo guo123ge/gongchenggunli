@@ -50,7 +50,7 @@ export const quantityUpdateSchema = z.object({
 });
 
 export const reviewSchema = z.object({
-  targetType: z.enum(["daily-log", "material", "machinery", "safety", "archive", "change-visa"]),
+  targetType: z.enum(["daily-log", "documents", "material", "machinery", "safety", "archive", "change-visa"]),
   targetId: z.string().min(1),
   action: z.enum(["approve", "reject", "return"]),
   comment: z.string().optional(),
